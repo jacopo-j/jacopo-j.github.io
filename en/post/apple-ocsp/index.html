@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.133.1"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Does Apple really log every app you run? A technical look&nbsp;&ndash;&nbsp;Jacopo Jannone - blog</title><link rel="stylesheet" href="/css/core.min.2dd128fcc709346b49dd1f9b3173e501b3edb153fd8b536ebcaf9a42999da947c3d7beaed80059b93cbb1431ede30089.css" integrity="sha384-LdEo/McJNGtJ3R&#43;bMXPlAbPtsVP9i1NuvK&#43;aQpmdqUfD176u2ABZuTy7FDHt4wCJ"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Does Apple really log every app you run? A technical look" />
+<meta name="og:title" content="Does Apple really log every app you run? A technical look" />
+<meta name="og:description" content="" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/en/"><span class="site name">Jacopo Jannone - blog</span></a>
+            </span>
+        <span class="header right-side"><span class="header lang-switcher"><span>en</span><a href="https://blog.jacopo.io/it/post/apple-ocsp/">it</a></span></span></div></section><section id="content"><div class="article-container"><section class="article header"><h1 class="article title">Does Apple really log every app you run? A technical look</h1><p class="article date">November 14, 2020<span class="lastmod"> • edited November 18, 2020</span></p></section><article class="article markdown-body"><p>Apple&rsquo;s launch of macOS Big Sur was almost immediately followed by server issues which prevented users from running third-party apps on their computers. While a workaround was soon found by people on Twitter, others raised some privacy concerns related to that issue.</p>
+<center><blockquote class="twitter-tweet"><p lang="en" dir="ltr">Hey Apple users:<br><br>If you&#39;re now experiencing hangs launching apps on the Mac, I figured out the problem using Little Snitch.<br><br>It&#39;s trustd connecting to <a href="https://t.co/FzIGwbGRan">https://t.co/FzIGwbGRan</a><br><br>Denying that connection fixes it, because OCSP is a soft failure.<br><br>(Disconnect internet also fixes.) <a href="https://t.co/w9YciFltrb">pic.twitter.com/w9YciFltrb</a></p>&mdash; Jeff Johnson (@lapcatsoftware) <a href="https://twitter.com/lapcatsoftware/status/1326990296412991489?ref_src=twsrc%5Etfw">November 12, 2020</a></blockquote></center> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<h2 id="what-is-ocsp">What is OCSP?</h2>
+<p>OCSP stands for Online Certificate Status Protocol<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>. As the name implies, it is used to verify the validity of a certificate without having to download and scan large certificate revocation lists. macOS uses OCSP to make sure that the developer certificate <strong>hasn&rsquo;t been revoked</strong> before an app is launched.</p>
+<p>As Jeff Johnson explains in his tweet above, if macOS cannot reach Apple&rsquo;s OCSP responder it skips the check and launches the app anyway - it is basically a fail-open behaviour. The problem is that Apple&rsquo;s responder didn&rsquo;t go down; it was reachable but became extremely slow, and this prevented the soft failure from triggering and giving up the check.</p>
+<p>It is clear that this mechanism requires macOS to <strong>contact Apple</strong> before an app is launched. The sudden public awareness of this fact, brought about by Apple&rsquo;s issues, raised some privacy concerns and a post from security researcher <strong>Jeffrey Paul</strong><sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> became very popular on Twitter. He claims that</p>
+<blockquote>
+<p>In the current version of the macOS, the OS sends to Apple a hash (unique identifier) of each and every program you run, when you run it.</p>
+</blockquote>
+<p>That would be creepy indeed.</p>
+<p>To make things worse, it is common for OCSP to use HTTP - I&rsquo;m talking about <em>good old <strong>plaintext HTTP</strong> on port 80, none of that HTTPS rubbish</em>. There is usually a good reason for this, that becomes especially clear when the OCSP service is used for web browsers: preventing loops. If you used HTTPS for checking a certificate with OCSP then you would need to also check the certificate for the HTTPS connection using OCSP. That would imply opening another HTTPS connection and so on.</p>
+<p>Of course while OCSP does not mandate encryption, it does require that responses are signed by the server. This still doesn&rsquo;t solve the initial concern that anyone with a traffic analyzer on your network could eavesdrop every app you open and when you open it.</p>
+<h2 id="diving-deeper">Diving deeper</h2>
+<p>Knowing some OCSP basics, more questions arise. OCSP is about checking certificates; why should this have anything to do with sending out <em><strong>hashes</strong></em> of apps you run? Does macOS really compute the hash of each executable at each launch? What about very large ones? That would take a significant amount of time; is it possible that nobody noticed? Maybe the hash is computed only once (e.g. the first time you run the app) and it is stored somewhere. But I&rsquo;m not convinced and I think these claims needs more research.</p>
+<p>Capturing a OCSP request is as easy as setting up an HTTP proxy or starting Wireshark. No HTTPS means no encryption, no certificate pinning, no problems whatsoever. I captured the following request while opening Firefox.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="nf">GET</span> <span class="nn">/ocsp-devid01/ME4wTKADAgEAMEUwQzBBMAkGBSsOAwIaBQAEFDOB0e%2FbaLCFIU0u76%2BMSmlkPCpsBBRXF%2B2iz9x8mKEQ4Py%2Bhy0s8uMXVAIIBseUIWx6qTA%3D</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+</span></span><span class="line"><span class="cl"><span class="n">Host</span><span class="o">:</span> <span class="l">ocsp.apple.com</span>
+</span></span><span class="line"><span class="cl"><span class="n">Accept</span><span class="o">:</span> <span class="l">*/*</span>
+</span></span><span class="line"><span class="cl"><span class="n">User-Agent</span><span class="o">:</span> <span class="l">com.apple.trustd/2.0</span>
+</span></span><span class="line"><span class="cl"><span class="n">Accept-Language</span><span class="o">:</span> <span class="l">it-it</span>
+</span></span><span class="line"><span class="cl"><span class="n">Accept-Encoding</span><span class="o">:</span> <span class="l">gzip, deflate</span>
+</span></span><span class="line"><span class="cl"><span class="n">Connection</span><span class="o">:</span> <span class="l">keep-alive</span>
+</span></span></code></pre></div><p>I should also add that after closing Firefox and opening it again, no requests were made. This is reasonable, and indicates that certificate checking isn&rsquo;t performed at each launch but only after it hasn&rsquo;t been performed for a certain period of time.</p>
+<p>The request is a very simple GET that contains the payload as a base64-encoded string. The actual binary data can be easily dumped to a file:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;ME4wTKADAgEAMEUwQzBBMAkGBSsOAwIaBQAEFDOB0e/baLCFIU0u76+MSmlkPCpsBBRXF+2iz9x8mKEQ4Py+hy0s8uMXVAIIBseUIWx6qTA=&#39;</span> <span class="p">|</span> base64 --decode &gt; output.bin
+</span></span></code></pre></div><p>We obtain an 80-byte-long payload that looks nothing like a hash. Sure enough, it isn&rsquo;t. We can use OpenSSL to extract readable information from the binary file.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openssl ocsp -text -reqin output.bin
+</span></span></code></pre></div><pre tabindex="0"><code>OCSP Request Data:
+    Version: 1 (0x0)
+    Requestor List:
+        Certificate ID:
+          Hash Algorithm: sha1
+          Issuer Name Hash: 3381D1EFDB68B085214D2EEFAF8C4A69643C2A6C
+          Issuer Key Hash: 5717EDA2CFDC7C98A110E0FCBE872D2CF2E31754
+          Serial Number: 06C794216C7AA930
+</code></pre><blockquote>
+<h3 id="update-november-18-2020">Update: November 18, 2020</h3>
+<p>While the payload itself is not a hash, we can see that it does contain two hashes: <code>Issuer Name Hash</code> and <code>Issuer Key Hash</code>. I&rsquo;ll take care of them later, but meanwhile you can easily verify by yourself that those are static values that never change between applications.</p>
+</blockquote>
+<p>It is clear that the <code>trustd</code> service on macOS doesn&rsquo;t send out a hash of the apps you launch. Instead, it just sends information about some certificate - as we would certainly expect after understanding what OCSP is in the first place.</p>
+<p>Well, this does not solve the problem, does it? If each app has a unique certificate, then it would still be possible to create a table that associates each serial number to the corresponding app, and thus this would still be a privacy concern. Let&rsquo;s check if this is the case.</p>
+<h2 id="developer-certificates">Developer certificates&hellip;</h2>
+<p>First of all I would like to determine from which certificate this information comes from. I used Apple&rsquo;s <code>codesign</code> utility to extract certificates from the Firefox app in order to look for matching data.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">codesign -d --extract-certificates /Applications/Firefox.app
+</span></span></code></pre></div><p>This command results in several files being created with names <code>codesign0</code>, <code>codesign1</code>, etc. The first one is the leaf certificate, while others belong to the certificate chain up until the root. <code>codesign0</code> should be what we are looking for, and once again we can use OpenSSL to extract some info about it.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openssl x509 -inform der -in codesign0 -text
+</span></span></code></pre></div><pre tabindex="0"><code>Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 488521955867797808 (0x6c794216c7aa930)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=Developer ID Certification Authority, OU=Apple Certification Authority, O=Apple Inc., C=US
+        Validity
+            Not Before: May  8 19:08:58 2017 GMT
+            Not After : May  9 19:08:58 2022 GMT
+        Subject: UID=43AQ936H96, CN=Developer ID Application: Mozilla Corporation (43AQ936H96), OU=43AQ936H96, O=Mozilla Corporation, C=US
+        ...
+</code></pre><p>Check the serial number we got (<code>0x6c794216c7aa930</code>) and compare it with the payload of the OCSP request. We have a match! This proves that OCSP requests actually send out information about the app developer certificate.</p>
+<blockquote>
+<h3 id="update-november-18-2020-1">Update: November 18, 2020</h3>
+<p>At this point we can easily understand the meaning of <code>Issuer Name Hash</code> and <code>Issuer Key Hash</code> in the OCSP request payload and why they never change. The keyword here is &ldquo;<strong>Issuer</strong>&rdquo;. Who issues developer certificates? Apple, of course. And in fact those are, respectively, a hash of Apple&rsquo;s certificate name and of Apple&rsquo;s certificate key.</p>
+</blockquote>
+<h2 id="and-their-generality">&hellip;and their generality</h2>
+<p>&ldquo;So what?&rdquo; you might ask. Well, developer certificates aren&rsquo;t unique for each app. Once again, don&rsquo;t take my word for it. We can quickly verify this by checking the certificate of a different app from Mozilla, say Thunderbird.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">codesign -d --extract-certificates /Applications/Thunderbird.app
+</span></span><span class="line"><span class="cl">openssl x509 -inform der -in codesign0 -text
+</span></span></code></pre></div><pre tabindex="0"><code>Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 488521955867797808 (0x6c794216c7aa930)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=Developer ID Certification Authority, OU=Apple Certification Authority, O=Apple Inc., C=US
+        Validity
+            Not Before: May  8 19:08:58 2017 GMT
+            Not After : May  9 19:08:58 2022 GMT
+        Subject: UID=43AQ936H96, CN=Developer ID Application: Mozilla Corporation (43AQ936H96), OU=43AQ936H96, O=Mozilla Corporation, C=US
+        ...
+</code></pre><p>That&rsquo;s exactly the same certificate used for Firefox (of course it is!). So Jeffrey Paul&rsquo;s analysis isn&rsquo;t quite accurate - at least for what concerns these parts (emphasis mine).</p>
+<blockquote>
+<p>The OS sends to Apple a hash (unique identifier) of each and every program you run, when you run it.</p>
+</blockquote>
+<blockquote>
+<p>[An IP address] allows for a table that has the following headings:
+Date, Time, Computer, ISP, City, State, <strong>Application Hash</strong></p>
+</blockquote>
+<blockquote>
+<p>[This means that Apple knows] what apps you open there, and how often. They know when you open Premiere over at a friend’s house on their Wi-Fi, and they know when you open Tor Browser in a hotel on a trip to another city.</p>
+</blockquote>
+<p>macOS does actually send out some opaque<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> information about <strong>the developer</strong> certificate of those apps, and that&rsquo;s quite an important difference on a privacy perspective.</p>
+<h2 id="a-word-about-notarization">A word about notarization</h2>
+<p>I would like to clarify something that is probably at the root of this misunderstanding. In fact, there exists a situation where macOS can actually send Apple the hash of an executable, and that is when <strong>Gatekeeper</strong> checks if a notarization ticket exists on Apple&rsquo;s servers upon first launch, in case the ticket isn&rsquo;t stapled to the app<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup>.</p>
+<p>This has nothing to do with OCSP. It happens under specific circumstances and the check is performed via a secure (HTTPS) endpoint located at <code>api.apple-cloudkit.com</code>. During this process, a pop-up with a progress bar is shown to the user.</p>
+<h2 id="about-blocking-ocsp">About blocking OCSP</h2>
+<p>As you probably have already learned during Apple&rsquo;s OCSP responder outage, you can block OCSP requests in several ways, the most popular ones being Little Snitch<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup> and editing your <code>/etc/hosts</code> file. Personally, I wouldn&rsquo;t suggest doing that as it prevents an <strong>important security feature</strong> from working.</p>
+<p>Now that you know the actual facts, if you think your privacy is put at risk by this feature more than having potential undetected malware running on your system, go ahead. Otherwise, don&rsquo;t bother.</p>
+<p>If you use macOS Big Sur, blocking OCSP might not be as trivial. Before crying conspiracy, however, keep in mind that common users are generally not able to fully understand and evaluate the impact of disabling such a complex and delicate security feature on their computer.</p>
+<h2 id="tldr">TL;DR</h2>
+<ul>
+<li>No, macOS <strong>does not</strong> send Apple a hash of your apps each time you run them.</li>
+<li>You should be aware that macOS <strong>might transmit</strong> some opaque<sup id="fnref1:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> information about the developer certificate of the apps you run. This information is sent out in clear text on your network.</li>
+<li><strong>You shouldn&rsquo;t</strong> probably block <code>ocsp.apple.com</code> with Little Snitch or in your hosts file.</li>
+</ul>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p><a href="https://en.wikipedia.org/wiki/Online_Certificate_Status_Protocol" target="_blank">https://en.wikipedia.org/wiki/Online_Certificate_Status_Protocol</a>&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="https://sneak.berlin/20201112/your-computer-isnt-yours/" target="_blank">https://sneak.berlin/20201112/your-computer-isnt-yours/</a>&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>The term <em>opaque</em> means the information is just a reference that requires external context in order to be meaningful. In other words, it is not possible to infer anything useful just by looking at it.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a>&#160;<a href="#fnref1:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p><a href="https://eclecticlight.co/2020/08/28/how-notarization-works/" target="_blank">https://eclecticlight.co/2020/08/28/how-notarization-works/</a>&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:5">
+<p><a href="https://obdev.at/products/littlesnitch/index.html" target="_blank">https://obdev.at/products/littlesnitch/index.html</a>&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div></article><section class="article labels"><a class="tag" href=/en/tags/macos/>macos</a><a class="tag" href=/en/tags/apple/>apple</a><a class="tag" href=/en/tags/privacy/>privacy</a></section>
+
+
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<div>
+<span style="color: silver">Share this post: </span><div id="share-buttons">
+<div class="twitter" title="Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https%3A%2F%2Fblog.jacopo.io%2Fen%2Fpost%2Fapple-ocsp%2F%20%E2%80%93%20by%20%40jacopoj_');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jacopo.io%2Fen%2Fpost%2Fapple-ocsp%2F');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="E-mail" onclick="window.open('mailto:?body=https%3A%2F%2Fblog.jacopo.io%2Fen%2Fpost%2Fapple-ocsp%2F');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+</div>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/en/post/spid-google-authenticator/"><span class="iconfont icon-article"></span>SPID and Google Authenticator: When Interoperability Is Intentionally Impeded</a></p><p><a class="link" href="/en/post/atm-app-vulnerability/"><span class="iconfont icon-article"></span>Vulnerabilities in ATM Milano's mobile app</a></p></section></div></section><section id="footer">
+    <div class="footer-wrap"><div class="details social-links"><a class="item" href="https://github.com/jacopo-j" target="_blank"><span class="iconfont icon-github"></span>&nbsp;jacopo-j</a><a rel="me" class="item" href="https://infosec.exchange/@jacopo" target="_blank"><span class="iconfont icon-mastodon"></span>&nbsp;@jacopo@infosec.exchange</a><a class="item" href="https://twitter.com/jacopoj_" target="_blank"><span class="iconfont icon-twitter"></span>&nbsp;@jacopoj_</a><a class="item" href="https://www.linkedin.com/in/jacopoj" target="_blank"><span class="iconfont icon-linkedin"></span>&nbsp;jacopoj</a><a class="item" href="https://jacopo.io/contact/?type=blog&amp;locale=en" target="_blank"><span class="iconfont icon-email"></span>&nbsp;E-mail</a><a class="item" href="/en/post/index.xml" target="_blank"><span class="iconfont icon-rss"></span>&nbsp;RSS</a></div><p class="copyright">© 2018-2024 <a href='https://jacopo.io' target='_blank'>Jacopo Jannone</a></p></div>
+</section></body>
+
+</html>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Macos on Jacopo Jannone - blog</title>
+    <link>https://blog.jacopo.io/en/tags/macos/</link>
+    <description>Recent content in Macos on Jacopo Jannone - blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>© 2018-2024 Jacopo Jannone</copyright>
+    <lastBuildDate>Sat, 14 Nov 2020 00:00:00 +0000</lastBuildDate>
+    
+        <atom:link href="https://blog.jacopo.io/en/tags/macos/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Does Apple really log every app you run? A technical look</title>
+      <link>https://blog.jacopo.io/en/post/apple-ocsp/</link>
+      <pubDate>Sat, 14 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/en/post/apple-ocsp/</guid>
+      <description>&lt;p&gt;Apple&amp;rsquo;s launch of macOS Big Sur was almost immediately followed by server issues which prevented users from running third-party apps on their computers. While a workaround was soon found by people on Twitter, others raised some privacy concerns related to that issue.&lt;/p&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>

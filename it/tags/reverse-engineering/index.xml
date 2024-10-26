@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Reverse Engineering on Jacopo Jannone - blog</title>
+    <link>https://blog.jacopo.io/it/tags/reverse-engineering/</link>
+    <description>Recent content in Reverse Engineering on Jacopo Jannone - blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>it</language>
+    <copyright>© 2018-2024 Jacopo Jannone</copyright>
+    <lastBuildDate>Sat, 26 Oct 2024 00:00:00 +0000</lastBuildDate>
+    
+        <atom:link href="https://blog.jacopo.io/it/tags/reverse-engineering/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>[Video] Exploring and Exploiting an Android “Smart POS” Payment Terminal</title>
+      <link>https://blog.jacopo.io/it/post/smart-pos/</link>
+      <pubDate>Sat, 26 Oct 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/it/post/smart-pos/</guid>
+      <description>&lt;p&gt;In this talk from No Hat 2024, I go through my exploration and reverse engineering of one of the most popular “Smart POS” credit card terminals currently in use worldwide. I present the research process that led me to the discovery of multiple software vulnerabilities, ultimately granting me persistent root access to the device&amp;rsquo;s operating system.&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>Analisi dei biglietti magnetici usati per i trasporti in Lombardia</title>
+      <link>https://blog.jacopo.io/it/post/sbme-dm/</link>
+      <pubDate>Tue, 04 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/it/post/sbme-dm/</guid>
+      <description>&lt;p&gt;Una banda magnetica su un biglietto usa e getta potrebbe sembrare una cosa piuttosto noiosa e poco degna di essere studiata. Ogni tanto però la curiosità prevale, una scoperta tira l&amp;rsquo;altra e in men che non si dica ci si trova a viaggiare non per lavoro o per diletto, ma per accumulare biglietti da analizzare. Ecco tutto ciò che ho scoperto sul mondo che c&amp;rsquo;è dietro.&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>SPID e Google Authenticator: quando l&#39;interoperabilità viene ostacolata di proposito</title>
+      <link>https://blog.jacopo.io/it/post/spid-google-authenticator/</link>
+      <pubDate>Tue, 09 Mar 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/it/post/spid-google-authenticator/</guid>
+      <description>&lt;p&gt;La maggior parte dei provider SPID supporta l&amp;rsquo;autenticazione a due fattori tramite un&amp;rsquo;app che genera codici OTP. Ogni provider ha la propria app, incompatibile con le app degli altri provider e con quelle &amp;ldquo;universali&amp;rdquo; come Google Authenticator. Peccato che, dietro le quinte, tutte le app usino lo stesso algoritmo e che l&amp;rsquo;incompatibilità sia puramente artificiale.&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>Reverse engineering dell&#39;app di Trenitalia</title>
+      <link>https://blog.jacopo.io/it/post/trenitalia-reverse-engineering/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/it/post/trenitalia-reverse-engineering/</guid>
+      <description>&lt;p&gt;Trenitalia ha da poco rilasciato la nuova versione della sua app per iOS e Android. Avendo già avuto a che fare con i meravigliosi sistemi informatici delle Ferrovie dello Stato per lo sviluppo di &lt;a href=&#34;https://trenitbot.jacopo.io&#34; target=&#34;_blank&#34;&gt;&lt;strong&gt;TrenItBot&lt;/strong&gt;&lt;/a&gt; e per altri progetti, una sbirciata anche qui non poteva mancare.&lt;/p&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>

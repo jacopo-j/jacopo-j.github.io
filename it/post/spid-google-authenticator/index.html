@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="it"><meta charset="utf-8"><meta name="generator" content="Hugo 0.133.1"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>SPID e Google Authenticator: quando l&#39;interoperabilità viene ostacolata di proposito&nbsp;&ndash;&nbsp;Jacopo Jannone - blog</title><link rel="stylesheet" href="/css/core.min.2dd128fcc709346b49dd1f9b3173e501b3edb153fd8b536ebcaf9a42999da947c3d7beaed80059b93cbb1431ede30089.css" integrity="sha384-LdEo/McJNGtJ3R&#43;bMXPlAbPtsVP9i1NuvK&#43;aQpmdqUfD176u2ABZuTy7FDHt4wCJ"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="SPID e Google Authenticator: quando l&#39;interoperabilità viene ostacolata di proposito" />
+<meta name="og:title" content="SPID e Google Authenticator: quando l&#39;interoperabilità viene ostacolata di proposito" />
+<meta name="og:description" content="Cosa impedisce di usare l&#39;app che si preferisce per generare i codici OTP" /><meta name="twitter:image" content="https://blog.jacopo.io/spid-google-authenticator/image3.png" />
+<meta name="og:image" content="https://blog.jacopo.io/spid-google-authenticator/image3.png" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/it/"><span class="site name">Jacopo Jannone - blog</span></a>
+            </span>
+        <span class="header right-side"><span class="header lang-switcher"><span>it</span><a href="https://blog.jacopo.io/en/post/spid-google-authenticator/">en</a></span></span></div></section><section id="content"><div class="article-container"><section class="article header"><h1 class="article title">SPID e Google Authenticator<br /><small>Quando l'interoperabilità viene ostacolata di proposito</small></h1><p class="article date">9 marzo 2021<span class="lastmod"> • Modificato il 26 ottobre 2024</span><span class="langs"><span class="lang"><a href="/en/post/spid-google-authenticator/">English version</a></span></span></p></section><article class="article markdown-body"><p>La maggior parte dei provider SPID supporta l&rsquo;autenticazione a due fattori tramite un&rsquo;app che genera codici OTP. Ogni provider ha la propria app, incompatibile con le app degli altri provider e con quelle &ldquo;universali&rdquo; come Google Authenticator. Peccato che, dietro le quinte, tutte le app usino lo stesso algoritmo e che l&rsquo;incompatibilità sia puramente artificiale.</p>
+<p>In questo post analizzo le app per Android di alcuni provider SPID. Con del reverse engineering ottengo i parametri necessari per la generazione dei codici OTP, e li uso per configurare un generatore di codici universale come Google Authenticator, Yubico Authenticator o Authy.</p>
+<h2 id="motivazioni">Motivazioni</h2>
+<ul>
+<li><strong>Flessibilità</strong>: persone diverse hanno esigenze diverse. C&rsquo;è chi ha uno smartphone vecchio, chi preferisce non installare i Google Play Services, chi ha il <em>root</em> o il <em>jailbreak</em><sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>. In tutti questi casi potrebbe non essere possibile usare le app fornite dai provider.</li>
+<li><strong>Sicurezza</strong>: qualcuno potrebbe voler utilizzare un dispositivo offline ad alta sicurezza come una YubiKey<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> piuttosto che il proprio smartphone, soprattutto nel caso in cui non sia dotato di sistemi di sicurezza hardware<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> per memorizzare le credenziali in modo sicuro.</li>
+<li><strong>FOSS</strong>: ad oggi non esistono provider che utilizzino un&rsquo;app rilasciata come software libero open source. Esistono invece decine di app FOSS universali per generare codici OTP.</li>
+</ul>
+<p>A queste motivazioni ne aggiungo una soggettiva: la <strong>comodità</strong>. Se ogni sito web a cui siamo registrati avesse una sua app per l&rsquo;autenticazione a due fattori, avremmo i telefoni inutilmente intasati di app tutte simili ma incompatibili tra loro. Avere tutto in un unico posto è meglio.</p>
+<h2 id="background-cenni-sullalgoritmo-totp">Background: cenni sull&rsquo;algoritmo TOTP</h2>
+<p>Sugli app store di iOS e Android è possibile trovare decine o centinaia di applicazioni che generano codici OTP per l&rsquo;autenticazione a due fattori. Certamente Google Authenticator è la più popolare, ma è solo una delle tante: ce n&rsquo;è per tutti i gusti. Ciò che accomuna tutti questi <em>autenticatori</em> universali è l&rsquo;algoritmo su cui si basano, <strong>TOTP</strong> (<em>Time-based One-Time Password</em>)<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup>, estensione del più generico HOTP (<em>HMAC-based One-Time Password</em>)<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup>.</p>
+<p>Non mi dilungherò a spiegare il funzionamento dell&rsquo;algoritmo, dato che per comprendere il resto del post basta sapere che esso prevede quattro &ldquo;ingredienti&rdquo;:</p>
+<ol>
+<li>un <strong>segreto</strong>;</li>
+<li>una funzione <strong>hash</strong> (di default SHA-1);</li>
+<li>l&rsquo;intervallo di validità di ogni codice (di default 30 secondi);</li>
+<li>il numero di cifre dei codici (di default 6).</li>
+</ol>
+<p>Tutti questi elementi devono essere condivisi tra server e applicazione. Solitamente sono stabiliti dal server, che li comunica all&rsquo;app tramite un <strong>codice QR</strong>. In alternativa l&rsquo;utente può trascrivere il segreto manualmente, ma in tal caso alcune app (come Google Authenticator) non consentono di impostare il resto dei parametri a valori diversi da quelli di default.</p>
+<p>Di fatto il codice QR contiene soltanto un URI con la seguente struttura:</p>
+<pre>
+otpauth://totp/?secret=<mark>SEGRETO</mark>&algorithm=<mark>HASH</mark>&period=<mark>INTERVALLO</mark>&digits=<mark>CIFRE</mark>
+</pre>
+<p>in cui sono ben riconoscibili i quattro parametri appena descritti. Eventualmente possono essere inclusi anche ulteriori parametri come il nome del servizio e l&rsquo;username. Segnalo <a href="https://stefansundin.github.io/2fa-qr/" target="_blank">questa pagina web</a> che permette di generare un codice QR a partire dai parametri TOTP e che ho trovato utilissima nel corso delle mie analisi.</p>
+<p>Un&rsquo;ultima osservazione riguarda la codifica del segreto (che solitamente è una sequenza casuale di byte): si usa la rappresentazione in <strong>Base32</strong>, meno comune di Base64 ma ottimizzata per essere letta dagli umani. Comprende le 26 lettere dell&rsquo;alfabeto (solo maiuscolo) e i numeri da 2 a 7 (mancano 0 e 1 perché potrebbero essere confusi con le lettere O e I).</p>
+<h2 id="casi-di-studio">Casi di studio</h2>
+<p>Ora che abbiamo ripassato i concetti fondamentali dell&rsquo;algoritmo TOTP, possiamo entrare nel merito delle app dei provider SPID. Mi permetto di anticipare il succo di ciò che segue: <em><strong>tutti i provider usano l&rsquo;algoritmo TOTP per la generazione dei codici, ma adottano misure più o meno complesse per impedire che venga usato con app diverse dalla loro</strong></em>.</p>
+<h3 id="infocert-id">InfoCert ID</h3>
+<p>L&rsquo;app di InfoCert ID<sup id="fnref:6"><a href="#fn:6" class="footnote-ref" role="doc-noteref">6</a></sup> per Android si attiva semplicemente effettuando il login con le proprie credenziali. È ragionevole dedurre che il segreto dell&rsquo;algoritmo TOTP sia <strong>inviato dal server</strong> all&rsquo;applicazione durante questa fase, e che quindi si possa ricavare intercettando le comunicazioni tra app e server.</p>
+<p>Un primo ostacolo emerge dal fatto che l&rsquo;app non trasmette il traffico attraverso eventuali proxy impostati a livello di sistema (cioè dalle impostazioni di Android). Per fare un MITM<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup> si deve quindi usare una soluzione basata su VPN, come l&rsquo;app <strong>Packet Capture</strong><sup id="fnref:8"><a href="#fn:8" class="footnote-ref" role="doc-noteref">8</a></sup>. Per catturare il traffico HTTPS è necessario configurare il sistema affinché consideri attendibile l&rsquo;autorità di certificazione di Packet Capture, cosa che a sua volta richiede di avere i privilegi di root.</p>
+<p>L&rsquo;app di InfoCert ID rifiuta di avviarsi sui dispositivi con <em>root</em>. Inoltre effettua certificate pinning, ovvero rifiuta di connettersi se il server le presenta un certificato emesso da un&rsquo;autorità di certificazione diversa da quelle previste in fase di sviluppo. Per superare questi due problemi si rende necessario <strong><em>patchare</em> l&rsquo;app</strong>.</p>
+<p>Una rapida occhiata al contenuto estratto del file .apk rende evidente che l&rsquo;app sia stata <strong>scritta in C++ usando Qt</strong><sup id="fnref:9"><a href="#fn:9" class="footnote-ref" role="doc-noteref">9</a></sup> invece che direttamente in Java; l&rsquo;intera logica dell&rsquo;applicazione si trova nella libreria <code>libinfocertID.so</code>. Questo rende molto più difficile procedere con una patch a runtime, usando strumenti come Frida<sup id="fnref:10"><a href="#fn:10" class="footnote-ref" role="doc-noteref">10</a></sup>. Fortunatamente, però, modificare la libreria è semplice e per farlo basta un hex editor.</p>
+<p>Il controllo anti-root è implementato in modo che a chiudere l&rsquo;app sia il front-end, <strong>scritto in QML</strong><sup id="fnref:11"><a href="#fn:11" class="footnote-ref" role="doc-noteref">11</a></sup>. Siccome il codice QML si trova &ldquo;in chiaro&rdquo; all&rsquo;interno della libreria, dopo aver identificato la parte rilevante possiamo semplicemente eliminare la chiamata a <code>Qt.quit()</code>.</p>
+<p><span class="image-container"><span class="link"><img class="img" src="/spid-google-authenticator/image1.png"
+        alt="Patching del controllo anti-root con un hex editor"/></span><span class="caption"><span class="title">Patching del controllo anti-root con un hex editor</span></span></span></p>
+<p>Per bypassare il certificate pinning, invece, possiamo esportare il certificato di Packet Capture in formato PEM e sostituirlo all&rsquo;interno della libreria al posto di uno dei certificati originali. In questo modo l&rsquo;applicazione considererà il certificato di Packet Capture tra quelli autorizzati e non rifiuterà la connessione.</p>
+<p><span class="image-container"><span class="link"><img class="img" src="/spid-google-authenticator/image2.png"
+        alt="Patching del certificate pinning con un hex editor"/></span><span class="caption"><span class="title">Patching del certificate pinning con un hex editor</span></span></span></p>
+<p>A questo punto possiamo sostituire la nostra libreria <em>patchata</em> all&rsquo;interno del file .apk. Una volta firmato e installato ci consentirà di usare l&rsquo;applicazione e di catturarne il traffico senza problemi. L&rsquo;analisi del traffico conferma la deduzione iniziale: dopo il login il server invia all&rsquo;app il segreto per l&rsquo;algoritmo TOTP sotto forma di stringa esadecimale.</p>
+<p>Per usare il segreto in app diverse da quella ufficiale, basta <strong>convertirne la codifica in Base32</strong>. Inoltre bisogna impostare il numero di cifre dei codici OTP a 8 e la funzione hash a SHA-512 (scoperta semplicemente andando per tentativi).</p>
+<p>È interessante notare il fatto che il segreto sembra indissolubilmente legato al proprio account e che non cambi mai. Non è possibile revocarlo dalla propria area personale sul sito di InfoCert, e non cambia a seguito del cambiamento della password. Ciò significa che attivando l&rsquo;applicazione su più dispositivi, <strong>tutti genereranno gli stessi codici OTP</strong>. Significa anche che se il segreto viene compromesso, non esiste rimedio.</p>
+<p>Le funzionalità di sicurezza che abbiamo visto contribuiscono a rendere improbabile il fatto che il segreto possa essere rubato durante il normale utilizzo del servizio. Bisogna invece prestare particolare attenzione se si decide di sperimentare seguendo le mie orme, e conviene evitare se non si è ben consci dei rischi a cui si va incontro.</p>
+<h3 id="aruba-id">Aruba ID</h3>
+<p>L&rsquo;app di Aruba ID<sup id="fnref:12"><a href="#fn:12" class="footnote-ref" role="doc-noteref">12</a></sup> segue un processo molto simile per la fase di attivazione. Richiede l&rsquo;inserimento di un &ldquo;codice di attivazione&rdquo; invece delle proprie credenziali, ma anche in questo caso possiamo supporre che il <strong>segreto sia trasmesso dal server</strong> e che lo si possa intercettare durante la comunicazione.</p>
+<p>Fortunatamente l&rsquo;app di Aruba è strutturata in modo più convenzionale e scritta in Java. Non effettua controlli anti-root, ma fa uso di certificate pinning. In questo caso possiamo ricorrere a Frida e <strong>patchare l&rsquo;app a runtime</strong> con uno script open source, come ad esempio <code>masbog/frida-android-unpinning-ssl</code><sup id="fnref:13"><a href="#fn:13" class="footnote-ref" role="doc-noteref">13</a></sup>.</p>
+<p>L&rsquo;analisi del traffico e una successiva decompilazione dell&rsquo;app con JD<sup id="fnref:14"><a href="#fn:14" class="footnote-ref" role="doc-noteref">14</a></sup> rivelano un meccanismo di protezione insolito: i dati scambiati tra client e server sono <strong>criptati a livello applicativo</strong> con AES-256. Considerando che (come vedremo tra un attimo) la chiave è fissa e che durante il normale utilizzo dell&rsquo;app il traffico è già protetto dalla connessione SSL (con certificate pinning!), questa misura sembra superflua ed è probabile che sia più un meccanismo per <strong>scoraggiare il reverse engineering</strong> piuttosto che una protezione per gli utenti.</p>
+<p>Ho accettato la sfida e ho ricostruito il funzionamento della cifratura con l&rsquo;analisi statica del codice. La chiave di cifratura principale, usata per criptare il traffico, si trova in un file binario tra le risorse del file .apk. Questo file è a sua volta criptato con un&rsquo;altra chiave che l&rsquo;app deriva a runtime usando l&rsquo;algoritmo PBKDF2<sup id="fnref:15"><a href="#fn:15" class="footnote-ref" role="doc-noteref">15</a></sup> (implementato dagli sviluppatori senza usare librerie pre-esistenti) e partendo da parametri in parte <em>hard-codati</em> e in parte salvati nei file di configurazione dell&rsquo;app.</p>
+<p>Ovviamente vale la considerazione che finché i parametri iniziali sono fissi, <strong>la chiave risultante è sempre la stessa</strong>, e a conti fatti la si può estrarre facilmente con Frida mettendo un <em>hook</em> sul metodo che esegue la decifratura. Procedendo in quel modo avrei potuto anche ignorare i dettagli su come sia derivata la chiave, ma mi sarei perso parte del divertimento.</p>
+<p>Una volta ottenuta la chiave principale, ancora una volta possiamo recuperare il segreto inviato dal server e <strong>convertirne la codifica in Base32</strong> per usarlo nell&rsquo;app che preferiamo. Anche in questo caso bisogna impostare il numero di cifre dei codici OTP a 8, mentre la funzione hash è SHA-256. A differenza di InfoCert, Aruba consente di cambiare il segreto associato al proprio account dall&rsquo;area personale accessibile sul sito.</p>
+<p><span class="image-container"><span class="link"><img class="img" src="/spid-google-authenticator/image3.png"
+        alt="Codici OTP di Aruba ID su Google Authenticator e Yubico Authenticator"/></span><span class="caption"><span class="title">Codici OTP di Aruba ID su Google Authenticator e Yubico Authenticator</span></span></span></p>
+<blockquote>
+<h4 id="aggiornamento-11-marzo-2021">Aggiornamento 11 marzo 2021</h4>
+<p>Un lettore di questo post, che ringrazio, mi ha segnalato di aver scritto del codice in Python per recuperare il segreto TOTP dall&rsquo;app <em>ArubaOTP</em>. Il codice è disponibile presso questo <a href="https://github.com/andry08/ArubaOTP-seed-extractor" target="_blank">repository su GitHub</a>.</p>
+<p>Mi è stato fatto anche notare che Google Authenticator per Android, a differenza della versione per iOS, non supporta la generazione di codici con un numero di cifre diverso da 6 o con funzione hash diversa da SHA-1. Suggerisco quindi di provare una delle numerose app alternative.</p>
+</blockquote>
+<h3 id="lepidaid">LepidaID</h3>
+<p>L&rsquo;app di LepidaID<sup id="fnref:16"><a href="#fn:16" class="footnote-ref" role="doc-noteref">16</a></sup> adotta un approccio diverso dalle precedenti per la procedura di attivazione. Funziona in modo molto simile a Google Authenticator: completamente offline, richiede che il segreto venga inserito a mano o scansionato tramite un codice QR. Notando che per l&rsquo;inserimento manuale il segreto viene fornito <strong>già in Base32</strong>, mi sono quasi illuso che fosse direttamente utilizzabile con altre app di autenticazione.</p>
+<p>Il codice QR non rispetta il formato standard; poco male. Provando a digitare il segreto in Google Authenticator ci si accorge che esso viene sì accettato, ma risulta nella generazione di <strong>codici OTP errati</strong>.</p>
+<p>Una rapida occhiata al codice decompilato dell&rsquo;applicazione svela il motivo (abbastanza comico). Il segreto che ci viene fornito è &ldquo;criptato&rdquo; con un <strong>cifrario a sostituzione monoalfabetica</strong>. In pratica ogni carattere X dell&rsquo;alfabeto in Base32 è sostituito con un carattere Y dello stesso alfabeto; l&rsquo;app si limita ad eseguire la sostituzione inversa.</p>
+<p>Di tutte le tecniche che abbiamo visto fin&rsquo;ora, questa è sicuramente quella più efficiente in termini di sforzo per creare un&rsquo;incompatibilità tra due sistemi perfettamente interoperabili.</p>
+<p>Per utilizzare il segreto con app diverse da quelle di Lepida è sufficiente effettuare la stessa sostituzione che viene fatta dall&rsquo;app, usando la tabella che si trova facilmente nel codice decompilato. Gli altri parametri, a differenza dei casi precedenti, rimangono quelli più comuni: codici OTP di 6 cifre e algoritmo SHA-1.</p>
+<p><em>Per l&rsquo;analisi di quest&rsquo;app ringrazio Fred.</em></p>
+<blockquote>
+<h4 id="aggiornamento-26-ottobre-2024">Aggiornamento 26 ottobre 2024</h4>
+<p>Un lettore di questo post, che ringrazio, mi ha segnalato di aver scritto del codice in Python per convertire automaticamente il segreto di LepidaID e il relativo codice QR in formato standard. Il codice è disponibile presso questo <a href="https://github.com/iecho8ae/lepidatotp" target="_blank">repository su GitHub</a>.</p>
+</blockquote>
+<h3 id="altri-provider">Altri provider</h3>
+<p>Non ho avuto modo di analizzare nel dettaglio <strong>Namirial ID</strong> e <strong>SielteID</strong>, che lascio per occasioni future. Mi giungono però notizie da colleghi che l&rsquo;hanno fatto e riferiscono che i concetti sono sempre gli stessi: algoritmo TOTP, segreto ricavabile dall&rsquo;analisi del traffico e utilizzabile su altre app. Potrebbe essere un ottimo passatempo per chiunque voglia mettersi alla prova.</p>
+<p>I seguenti provider, al momento della scrittura, non utilizzano generatori di codici offline; inviano i codici OTP di volta in volta tramite SMS.</p>
+<ul>
+<li>IntesaID<sup id="fnref:17"><a href="#fn:17" class="footnote-ref" role="doc-noteref">17</a></sup></li>
+<li>SpidItalia<sup id="fnref:18"><a href="#fn:18" class="footnote-ref" role="doc-noteref">18</a></sup></li>
+<li>TIM ID<sup id="fnref:19"><a href="#fn:19" class="footnote-ref" role="doc-noteref">19</a></sup></li>
+<li>PosteID<sup id="fnref:20"><a href="#fn:20" class="footnote-ref" role="doc-noteref">20</a></sup></li>
+</ul>
+<p>(PosteID consente anche di effettuare il login scansionando un codice QR dall&rsquo;applicazione o rispondendo a una notifica push).</p>
+<blockquote>
+<h4 id="aggiornamento-10-ottobre-2022">Aggiornamento 10 ottobre 2022</h4>
+<p>Dopo la pubblicazione di questo post, diversi lettori mi hanno segnalato che l&rsquo;applicazione di PosteID è stata aggiornata introducendo un generatore di codici OTP analogo a quello delle altre app analizzate. Non ho avuto, tuttavia, il tempo da dedicare a un reverse engineering dell&rsquo;app per approfondirne il funzionamento.</p>
+<p>Segnalo che Lorenzo, uno dei lettori di questo post, ha prodotto un&rsquo;implementazione open source delle funzionalità dell&rsquo;app e l&rsquo;ha resa disponibile al seguente indirizzo: <a href="https://projects.lilik.it/zolfa/pyjod" target="_blank">https://projects.lilik.it/zolfa/pyjod</a>. Le funzionalità implementate includono la generazione di codici OTP, l&rsquo;accesso tramite codici QR e notifiche push.</p>
+<p>Il lavoro di Lorenzo rivela che <strong>anche PosteID</strong>, dietro le quinte, <strong>utilizza il protocollo TOTP</strong>, come tutte le altre app studiate in questo post.</p>
+<p>Ringrazio Lorenzo per aver condiviso il suo lavoro e per avermi tenuto informato durante il processo di analisi.</p>
+</blockquote>
+<h2 id="conclusioni">Conclusioni</h2>
+<p>I provider SPID usano l&rsquo;algoritmo standard TOTP per la generazione dei codici OTP, ma tentano di impedire che si usino app diverse dalla loro distruggendo l&rsquo;interoperabilità che lo standard garantisce, e probabilmente limitando anche l&rsquo;esperienza d&rsquo;uso degli utenti.</p>
+<p>Spero che questo post possa essere di aiuto agli <em>smanettoni</em> che, come me, hanno intenzione di superare quest&rsquo;inutile restrizione e a chi, più in generale, abbia semplicemente voglia di <em>smontare</em> un&rsquo;app per vedere come funziona.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>Alcune delle app analizzate di seguito rifiutano di funzionare se rilevano un sistema operativo &ldquo;manomesso&rdquo;.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="https://www.yubico.com" target="_blank">https://www.yubico.com</a>&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p><a href="https://developer.android.com/training/articles/keystore" target="_blank">https://developer.android.com/training/articles/keystore</a>&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p><a href="https://tools.ietf.org/html/rfc6238" target="_blank">https://tools.ietf.org/html/rfc6238</a>&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:5">
+<p><a href="https://tools.ietf.org/html/rfc4226" target="_blank">https://tools.ietf.org/html/rfc4226</a>&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:6">
+<p><a href="https://play.google.com/store/apps/details?id=it.infocert.infocertid" target="_blank">https://play.google.com/store/apps/details?id=it.infocert.infocertid</a>&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:7">
+<p>Man In The Middle attack&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:8">
+<p><a href="https://play.google.com/store/apps/details?id=app.greyshirts.sslcapture" target="_blank">https://play.google.com/store/apps/details?id=app.greyshirts.sslcapture</a>&#160;<a href="#fnref:8" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:9">
+<p><a href="https://www.qt.io" target="_blank">https://www.qt.io</a>&#160;<a href="#fnref:9" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:10">
+<p><a href="https://frida.re" target="_blank">https://frida.re</a>&#160;<a href="#fnref:10" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:11">
+<p><a href="https://doc.qt.io/qt-5/qtqml-index.html" target="_blank">https://doc.qt.io/qt-5/qtqml-index.html</a>&#160;<a href="#fnref:11" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:12">
+<p><a href="https://play.google.com/store/apps/details?id=it.aruba.pec.mobile.otp" target="_blank">https://play.google.com/store/apps/details?id=it.aruba.pec.mobile.otp</a>&#160;<a href="#fnref:12" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:13">
+<p><a href="https://codeshare.frida.re/@masbog/frida-android-unpinning-ssl/" target="_blank">https://codeshare.frida.re/@masbog/frida-android-unpinning-ssl/</a>&#160;<a href="#fnref:13" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:14">
+<p><a href="http://java-decompiler.github.io" target="_blank">http://java-decompiler.github.io</a>&#160;<a href="#fnref:14" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:15">
+<p><a href="https://en.wikipedia.org/wiki/PBKDF2" target="_blank">https://en.wikipedia.org/wiki/PBKDF2</a>&#160;<a href="#fnref:15" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:16">
+<p><a href="https://play.google.com/store/apps/details?id=it.lepida.id.authenticator" target="_blank">https://play.google.com/store/apps/details?id=it.lepida.id.authenticator</a>&#160;<a href="#fnref:16" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:17">
+<p><a href="https://www.agid.gov.it/sites/default/files/repository_files/gu-spid_guida_utente_spid_ver03.pdf" target="_blank">https://www.agid.gov.it/sites/default/files/repository_files/gu-spid_guida_utente_spid_ver03.pdf</a>&#160;<a href="#fnref:17" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:18">
+<p><a href="https://www.agid.gov.it/sites/default/files/repository_files/guida_utente_spid_1.pdf" target="_blank">https://www.agid.gov.it/sites/default/files/repository_files/guida_utente_spid_1.pdf</a>&#160;<a href="#fnref:18" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:19">
+<p><a href="https://www.agid.gov.it/sites/default/files/repository_files/spidprin.tt_.dpmu15000.03_-_guida_utente_al_servizio_tim_id.pdf" target="_blank">https://www.agid.gov.it/sites/default/files/repository_files/spidprin.tt_.dpmu15000.03_-_guida_utente_al_servizio_tim_id.pdf</a>&#160;<a href="#fnref:19" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:20">
+<p><a href="https://www.agid.gov.it/sites/default/files/repository_files/dto_spid_pi_004-allegato_guidautente_v31.pdf" target="_blank">https://www.agid.gov.it/sites/default/files/repository_files/dto_spid_pi_004-allegato_guidautente_v31.pdf</a>&#160;<a href="#fnref:20" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div></article><section class="article labels"><a class="tag" href=/it/tags/spid/>spid</a><a class="tag" href=/it/tags/app/>app</a><a class="tag" href=/it/tags/reverse-engineering/>reverse engineering</a></section>
+
+
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<div>
+<span style="color: silver">Condividi post: </span><div id="share-buttons">
+<div class="twitter" title="Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https%3A%2F%2Fblog.jacopo.io%2Fit%2Fpost%2Fspid-google-authenticator%2F%20%E2%80%93%20by%20%40jacopoj_');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jacopo.io%2Fit%2Fpost%2Fspid-google-authenticator%2F');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="E-mail" onclick="window.open('mailto:?body=https%3A%2F%2Fblog.jacopo.io%2Fit%2Fpost%2Fspid-google-authenticator%2F');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+</div>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/it/post/sbme-dm/"><span class="iconfont icon-article"></span>Analisi dei biglietti magnetici usati per i trasporti in Lombardia</a></p><p><a class="link" href="/it/post/apple-ocsp/"><span class="iconfont icon-article"></span>È vero che Apple traccia ogni app che apri? Uno sguardo tecnico</a></p></section></div></section><section id="footer">
+    <div class="footer-wrap"><div class="details social-links"><a class="item" href="https://github.com/jacopo-j" target="_blank"><span class="iconfont icon-github"></span>&nbsp;jacopo-j</a><a rel="me" class="item" href="https://infosec.exchange/@jacopo" target="_blank"><span class="iconfont icon-mastodon"></span>&nbsp;@jacopo@infosec.exchange</a><a class="item" href="https://twitter.com/jacopoj_" target="_blank"><span class="iconfont icon-twitter"></span>&nbsp;@jacopoj_</a><a class="item" href="https://www.linkedin.com/in/jacopoj" target="_blank"><span class="iconfont icon-linkedin"></span>&nbsp;jacopoj</a><a class="item" href="https://jacopo.io/contact/?type=blog&amp;locale=it" target="_blank"><span class="iconfont icon-email"></span>&nbsp;E-mail</a><a class="item" href="/it/post/index.xml" target="_blank"><span class="iconfont icon-rss"></span>&nbsp;RSS</a></div><p class="copyright">© 2018-2024 <a href='https://jacopo.io' target='_blank'>Jacopo Jannone</a></p></div>
+</section></body>
+
+</html>
