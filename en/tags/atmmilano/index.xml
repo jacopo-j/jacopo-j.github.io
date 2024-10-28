@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Atmmilano on Jacopo Jannone - blog</title>
+    <link>https://blog.jacopo.io/en/tags/atmmilano/</link>
+    <description>Recent content in Atmmilano on Jacopo Jannone - blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>© 2018-2024 Jacopo Jannone</copyright>
+    <lastBuildDate>Tue, 04 Jan 2022 00:00:00 +0000</lastBuildDate>
+    
+        <atom:link href="https://blog.jacopo.io/en/tags/atmmilano/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Analysis of magnetic stripe tickets used for public transport in Lombardy, Italy</title>
+      <link>https://blog.jacopo.io/en/post/sbme-dm/</link>
+      <pubDate>Tue, 04 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/en/post/sbme-dm/</guid>
+      <description>&lt;p&gt;Una banda magnetica su un biglietto usa e getta potrebbe sembrare una cosa piuttosto noiosa e poco degna di essere studiata. Ogni tanto però la curiosità prevale, una scoperta tira l&amp;rsquo;altra e in men che non si dica ci si trova a viaggiare non per lavoro o per diletto, ma per accumulare biglietti da analizzare. Ecco tutto ciò che ho scoperto sul mondo che c&amp;rsquo;è dietro.&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>Vulnerabilities in ATM Milano&#39;s mobile app</title>
+      <link>https://blog.jacopo.io/en/post/atm-app-vulnerability/</link>
+      <pubDate>Tue, 18 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/en/post/atm-app-vulnerability/</guid>
+      <description>&lt;p&gt;Some design flaws left ATM Milano&amp;rsquo;s mobile app vulnerable to attacks: anyone could access any users&amp;rsquo; data and tickets by just knowing their e-mail address. Meanwhile, some apparent security features made the vulnerabilities harder to spot and to exploit.&lt;/p&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>

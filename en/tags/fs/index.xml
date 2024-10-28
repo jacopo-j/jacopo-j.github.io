@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Fs on Jacopo Jannone - blog</title>
+    <link>https://blog.jacopo.io/en/tags/fs/</link>
+    <description>Recent content in Fs on Jacopo Jannone - blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>© 2018-2024 Jacopo Jannone</copyright>
+    <lastBuildDate>Mon, 24 Sep 2018 00:00:00 +0000</lastBuildDate>
+    
+        <atom:link href="https://blog.jacopo.io/en/tags/fs/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Reverse engineering Trenitalia&#39;s mobile application</title>
+      <link>https://blog.jacopo.io/en/post/trenitalia-reverse-engineering/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/en/post/trenitalia-reverse-engineering/</guid>
+      <description>&lt;p&gt;Trenitalia ha da poco rilasciato la nuova versione della sua app per iOS e Android. Avendo già avuto a che fare con i meravigliosi sistemi informatici delle Ferrovie dello Stato per lo sviluppo di &lt;a href=&#34;https://trenitbot.jacopo.io&#34; target=&#34;_blank&#34;&gt;&lt;strong&gt;TrenItBot&lt;/strong&gt;&lt;/a&gt; e per altri progetti, una sbirciata anche qui non poteva mancare.&lt;/p&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>

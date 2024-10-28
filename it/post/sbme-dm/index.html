@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="it"><meta charset="utf-8"><meta name="generator" content="Hugo 0.133.1"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Analisi dei biglietti magnetici usati per i trasporti in Lombardia&nbsp;&ndash;&nbsp;Jacopo Jannone - blog</title><link rel="stylesheet" href="/css/core.min.2dd128fcc709346b49dd1f9b3173e501b3edb153fd8b536ebcaf9a42999da947c3d7beaed80059b93cbb1431ede30089.css" integrity="sha384-LdEo/McJNGtJ3R&#43;bMXPlAbPtsVP9i1NuvK&#43;aQpmdqUfD176u2ABZuTy7FDHt4wCJ"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Analisi dei biglietti magnetici usati per i trasporti in Lombardia" />
+<meta name="og:title" content="Analisi dei biglietti magnetici usati per i trasporti in Lombardia" />
+<meta name="og:description" content="Come funziona e cosa nasconde la banda magnetica dei biglietti di ATM e Trenord" /><meta name="twitter:image" content="https://blog.jacopo.io/sbme-dm/ogcover.png" />
+<meta name="og:image" content="https://blog.jacopo.io/sbme-dm/ogcover.png" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/it/"><span class="site name">Jacopo Jannone - blog</span></a>
+            </span>
+        <span class="header right-side"><span class="header lang-switcher"><span>it</span><a href="https://blog.jacopo.io/en/post/sbme-dm/">en</a></span></span></div></section><section id="content"><div class="article-container"><section class="article header"><h1 class="article title">Analisi dei biglietti magnetici usati per i trasporti in Lombardia</h1><p class="article date">4 gennaio 2022</p></section><article class="article markdown-body"><p>Una banda magnetica su un biglietto usa e getta potrebbe sembrare una cosa piuttosto noiosa e poco degna di essere studiata. Ogni tanto però la curiosità prevale, una scoperta tira l&rsquo;altra e in men che non si dica ci si trova a viaggiare non per lavoro o per diletto, ma per accumulare biglietti da analizzare. Ecco tutto ciò che ho scoperto sul mondo che c&rsquo;è dietro.</p>
+<h2 id="il-sistema-di-bigliettazione-magnetica-ed-elettronica">Il Sistema di Bigliettazione Magnetica ed Elettronica</h2>
+<p>Il SBME nasce a fine anni &lsquo;90 da un accordo firmato tra <strong>ATM</strong>, Trenitalia e FNMT (queste ultime due ora fuse in <strong>Trenord</strong>) con l&rsquo;obiettivo di sostituire i biglietti cartacei in uso all&rsquo;epoca per il trasporto pubblico locale di Milano e per le ferrovie lombarde. Viene realizzato da Elsag (ora AEP), Ascom (ora Conduent) e Firema<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>, ed entra a pieno regime nel 2006. Da allora rimane sostanzialmente invariato sul piano tecnologico.</p>
+<p>Il sistema prevede due nuovi supporti per i titoli di viaggio. Per le tariffe a breve termine vengono introdotti i biglietti magnetici, formalmente chiamati <strong>documenti magnetici (DM)</strong>. Per gli abbonamenti vengono introdotti due tipi di tessere elettroniche senza contatti (TSC): MIFARE Classic, sviluppato da NXP e parzialmente basato sullo standard ISO 14443, e Calypso 1.0 (CD97)<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup>, sviluppato dalla società francese Innovatron e basato su una tecnologia proprietaria. Le TSC meritano senza dubbio un post a parte che rimando a una data futura; qui mi occuperò esclusivamente dei DM.</p>
+<p>Tutto l&rsquo;hardware che gira attorno al SBME è stato realizzato dall&rsquo;azienda svizzera Ascom, anche se alcuni dispositivi riportano loghi di altre aziende. Il motivo è che nel 2005 la divisione trasporti di Ascom è stata acquisita da ACS; nel 2009 ACS è stata a sua volta inglobata da Xerox, ma nel 2017 si è nuovamente separata costituendo l&rsquo;attuale Conduent. L&rsquo;hardware comprende i <strong>distributori automatici</strong> di biglietti (DAB), i cosiddetti &ldquo;distributori semiautomatici di documenti&rdquo; (DSD)<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> usati dalle biglietterie, e naturalmente le <strong>convalidatrici</strong> (CNV). Fin dalla nascita del SBME le convalidatrici usate sono i modelli VPE 412, CAS 412 (versione da incasso per i tornelli della metro)<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> e VPE 413 (modello &ldquo;slim&rdquo; solo tessere)<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup>. Nelle stazioni della metro sono anche presenti VPE 420<sup id="fnref:6"><a href="#fn:6" class="footnote-ref" role="doc-noteref">6</a></sup> usate come totem per la ricarica degli abbonamenti.</p>
+<h3 id="uno-sguardo-al-futuro-del-sbme">Uno sguardo al futuro del SBME</h3>
+<p>Nel 2014 la Regione Lombardia ha pubblicato un bando per lo sviluppo di un <strong>nuovo sistema di bigliettazione</strong>, esclusivamente elettronica, interoperabile tra tutti gli operatori di trasporto della Regione<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup>. Il bando prevede l&rsquo;uso di tecnologie più moderne che andranno a soppiantare quelle attualmente in uso dal SBME: le tessere elettroniche saranno &ldquo;aggiornate&rdquo; a Calypso 3.1, che è interamente conforme allo standard ISO 14443; i DM saranno sostituiti da biglietti contactless <strong><em>chip on paper</em> (COP)</strong> di tipo MIFARE Ultralight.</p>
+<p>Tra una proroga e l&rsquo;altra lo sviluppo procede a rilento, ma è ragionevole pensare che ai DM rimanga solo qualche anno di vita; è anche per questo che ho deciso di studiarli prima che spariscano dalla circolazione. Nel 2019 Trenord ha già tentato di accostare ai DM un tipo sperimentale di biglietto COP<sup id="fnref:8"><a href="#fn:8" class="footnote-ref" role="doc-noteref">8</a></sup> basato su MIFARE Classic invece che su MIFARE Ultralight, ma ha interrotto la sperimentazione nel giro di pochi mesi.</p>
+<h2 id="dm-e-banda-magnetica">DM e banda magnetica</h2>
+<p>La banda magnetica è un sistema di memorizzazione dei dati molto <strong>semplice ed economico</strong>. Il suo uso più popolare è sicuramente quello legato alle carte di pagamento, ma le si trova come chiavi per le camere degli hotel, per il controllo degli accessi in palestre e piscine, e naturalmente nei supporti per i titoli di viaggio.</p>
+<h3 id="caratteristiche-fisiche">Caratteristiche fisiche</h3>
+<p>Fisicamente la banda magnetica è costituita da sottile strato di materiale in cui sono disperse microscopiche particelle di ossido metallico che possono essere magnetizzate con due orientamenti, nord e sud. A seconda dei materiali usati, la banda può essere più o meno facile da magnetizzare. Una banda che si magnetizza facilmente si dice a <em>bassa coercitività</em>; è economica, richiede apparecchiature economiche, ma tende anche a smagnetizzarsi più facilmente e quindi ha una durata limitata. Viceversa, una banda magnetica ad <em>alta coercitività</em> richiede più energia per essere magnetizzata e implica costi maggiori, ma resiste anche meglio alla smagnetizzazione accidentale. Per questo motivo <strong>i DM usano una banda magnetica ad alta coercitività</strong><sup id="fnref:9"><a href="#fn:9" class="footnote-ref" role="doc-noteref">9</a></sup>, così come le carte di pagamento e tutte le tessere fatte per durare nel tempo.</p>
+<p>Per le bande magnetiche applicate a biglietti cartacei si può fare un&rsquo;ulteriore distinzione di tipo fisico: la banda può essere un nastro di materiale plastico che viene fuso ad alta temperatura sul cartoncino (banda magnetica di tipo <em><strong>tape</strong></em>), oppure può essere costituita da una sospensione liquida di particelle magnetiche che viene essiccata sul cartoncino (banda magnetica di tipo <em><strong>slurry</strong></em>)<sup id="fnref:10"><a href="#fn:10" class="footnote-ref" role="doc-noteref">10</a></sup>. Nel primo caso la banda appare lucida e uniforme, nel secondo caso opaca e irregolare. Il SBME usa bande magnetiche di entrambi i tipi.</p>
+<p><span class="image-container"><span class="link"><img class="img" src="/sbme-dm/slurry_tape.png"
+        alt/></span><span class="caption"><span class="title">Confronto tra biglietto con banda magnetica di tipo <i>tape</i> (a sinistra) e uno con banda magnetica di tipo <i>slurry</i> (a destra).</span></span></span></p>
+<h3 id="codifica-dei-dati">Codifica dei dati</h3>
+<p>La banda magnetica può essere vista come una lunga fila di piccole calamite che possono essere orientate in due modi: <span style="border: 1px solid; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: red">N</span>    <span style="color: #2390f9">S</span></span> e <span style="border: 1px solid; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: #2390f9">S</span>    <span style="color: red">N</span></span>. Una banda magnetica &ldquo;vuota&rdquo;, o non codificata, è composta da particelle magnetiche tutte con lo stesso orientamento, ad esempio <span style="border: 1px solid; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: red">N</span>    <span style="color: #2390f9">S</span></span><span style="border: 1px solid; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: red">N</span>    <span style="color: #2390f9">S</span></span><span style="border: 1px solid; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: red">N</span>    <span style="color: #2390f9">S</span></span><span style="border: 1px solid; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: red">N</span>    <span style="color: #2390f9">S</span></span>. L&rsquo;atto di codificare (scrivere dati) sulla banda magnetica consiste nell&rsquo;invertire l&rsquo;orientamento di alcune &ldquo;calamite&rdquo;, così da creare dei <strong>punti in cui due poli nord o due poli sud si toccano</strong>: <span style="border: 1px solid; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: red">N</span>    <span style="color: #2390f9">S</span></span><span style="border: 1px solid; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: red">N</span>    <span style="color: #2390f9">S</span></span><span style="border: 2px solid orange; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: #2390f9">S</span>    <span style="color: red">N</span></span><span style="border: 1px solid; padding: 0 4px 0 4px; margin: 0 2px 0 2px; font-weight: bold"><span style="color: red">N</span>    <span style="color: #2390f9">S</span></span>. Nel momento in cui la banda magnetica striscia sulla testina di un lettore, questi punti inducono dei <strong>picchi di corrente</strong>; la distanza tra questi picchi determina la lettura di un bit 0 o di un bit 1.</p>
+<p>Assumendo che la velocità con cui la banda striscia sulla testina sia approssimativamente costante, possiamo definire <strong>periodo</strong> la distanza &ldquo;standard&rdquo; tra due picchi di corrente. La presenza di picco di corrente aggiuntivo all&rsquo;interno di questo periodo codifica un bit 1; un&rsquo;assenza di ulteriori picchi codifica un bit 0.</p>
+<p>
+    <span class="image-container">
+        <span class="link">
+            <picture>
+                <source srcset="/sbme-dm/it/f2f_dark.png" media="(prefers-color-scheme: dark)">
+                <img src="/sbme-dm/it/f2f_light.png" alt="">
+            </picture>
+        </span>
+    </span>
+</p>
+<p>Il tipo di codifica che ho appena descritto è quello utilizzato quasi universalmente per le bande magnetiche, e si chiama Biphase Mark Code; talvolta viene chiamato anche <strong>F2F</strong> (frequenza/doppia frequenza) o Aiken Biphase. Si tratta di una codifica <em>self-clocking</em>: la velocità con cui il segnale viene trasmesso può essere desunta dal segnale stesso. Nella pratica questo significa che la velocità con cui si striscia la banda magnetica non importa (purché rimanga più o meno costante).</p>
+<p>La teoria è affascinante, ma ogni tanto è utile anche sporcarsi le mani e vedere le cose con i propri occhi. È per questo motivo che mi sono procurato della <strong>polvere di ferro</strong> finissima e ci ho cosparso la banda magnetica di un DM, nel tentativo di visualizzare i picchi di flusso magnetico che in un lettore si traducono in picchi di corrente. Il risultato è piuttosto soddisfacente:</p>
+<p><img  src="/sbme-dm/fe_powder.png"
+        alt="Documento magnetico con polvere di ferro sulla banda magnetica"/></p>
+<p>Tenendo conto del funzionamento della codifica F2F e armandosi di tanta pazienza, in questo modo è possibile <strong>leggere a occhio nudo</strong> i dati scritti su un biglietto, cosa che qui ho fatto parzialmente:</p>
+<p>
+    <span class="image-container">
+        <span class="link">
+            <img src="/sbme-dm/fe_decoding.png" alt='Decodifica "a occhio nudo" dei dati scritti su un biglietto'>
+        </span>
+    </span>
+</p>
+<p>È interessante notare che l&rsquo;immagine sopra è stata capovolta prima della decodifica, perché i dati sono scritti da destra verso sinistra. Inoltre, alle due estremità della banda magnetica (in foto se ne vede solo una, a sinistra) si trovano una serie di zeri. Si tratta di bit di <strong>sincronizzazione</strong>, che servono al lettore per stabilire la dimensione di un periodo.</p>
+<h3 id="dm-vs-carte-di-pagamento">DM vs. carte di pagamento</h3>
+<p>Possiamo approfittare del metodo della polvere di ferro per visualizzare la banda magnetica di una <strong>carta di pagamento</strong> e confrontarla con quella di un DM.</p>
+<p><span class="image-container"><span class="link"><img class="img" src="/sbme-dm/dm_iso.jpeg"
+        alt/></span><span class="caption"><span class="title">Confronto tra la banda magnetica di una carta di credito e quella di un DM.</span></span></span></p>
+<p>La differenza più prominente è che la carta di pagamento ha una banda magnetica più larga, ma i dati sembrano essere codificati solo in due &ldquo;strisce&rdquo; che non occupano tutto lo spazio disponibile. Il testo dello standard ISO/IEC 7813, che definisce le caratteristiche delle carte di pagamento, fornisce una spiegazione. La banda magnetica delle carte di pagamento è composta da <strong>3 tracce separate</strong>, ognuna contenente informazioni diverse; la terza traccia è opzionale, ed evidentemente nella carta che ho mostrato non è presente. Se osserviamo la banda magnetica del DM notiamo invece che essa è composta da un&rsquo;unica traccia più larga, che occupa tutto lo spazio disponibile. Notiamo anche la traccia si trova nella stessa posizione della <strong>seconda traccia</strong> di una carta di pagamento.</p>
+<p>Un&rsquo;altra cosa che si nota immediatamente è che le due tracce presenti nella carta di pagamento appaiono diverse tra loro. Una spiegazione per questo arriva dal testo dello standard ISO/IEC 7811, che definisce le tecniche di scrittura dei dati sulle tessere di identificazione: la traccia 1 ha una <strong>densità</strong> di 210 bpi (bit per pollice), mentre la traccia 2 ha una densità di soli 75 bpi; ecco infatti che le linee verticali formate dalla polvere di ferro sono più distanziate tra loro. Se torniamo a osservare il DM notiamo che la distanza tra due linee verticali è una via di mezzo tra quella delle due tracce della carta di pagamento: qui abbiamo una densità ancora diversa, di 150 bpi<sup id="fnref:11"><a href="#fn:11" class="footnote-ref" role="doc-noteref">11</a></sup>.</p>
+<p>Vale la pena di notare, infine, che le dimensioni fisiche sono le stesse; sono quelle di una tessera standard, definite dall&rsquo;ISO/IEC 7810 con il nome <strong>ID-1</strong>. La maggior parte dei DM in circolazione è prodotta a partire da rotoli continui di cartoncino per stampanti termiche e non presenta quindi gli angoli arrotondati. Alcuni dei biglietti venduti nelle rivendite, prodotti nei centri massivi di codifica documenti di AEP<sup id="fnref1:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>, sono invece stampati su cartoncino tradizionale e hanno la forma classica con gli angoli arrotondati.</p>
+<h3 id="metodi-di-lettura">Metodi di lettura</h3>
+<p>Abbiamo già visto che, in teoria, per leggere il contenuto di una banda magnetica &ldquo;basta&rdquo; usare della polvere di ferro. Senza dubbio non si tratta però del metodo più comodo.</p>
+<p>Un&rsquo;alternativa che ritengo molto creativa ed interessante è quella di <strong>costruirsi un lettore</strong> usando la testina di un <strong>riproduttore di audiocassette</strong>. L&rsquo;idea è stata descritta in dettaglio in un post <a href="https://web.archive.org/web/20080709045755/http://www.timmatheson.com/91/" target="_blank">disponibile qui</a> (tramite The Wayback Machine) ed è sorprendentemente semplice da realizzare. Si basa sul fatto che il nastro magnetico di un&rsquo;audiocassetta e una banda magnetica sono in realtà due cose molto simili; tant&rsquo;è vero che il primo prototipo di tessera a banda magnetica è stato realizzato da un ingegnere dell&rsquo;IBM incollando un pezzo di nastro su una tessera di plastica.</p>
+<p>Esiste infine il metodo per gli scansafatiche, che consiste nel comprare un lettore di tessere magnetiche. Per i DM basta tener conto dei dati letti dalla traccia 2 e ignorare il resto; la densità di bit non standard non crea problemi perché rientra nel range 75-210 bpi usato dalle carte di pagamento e che quindi è supportato dai lettori. Attenzione però: molti lettori di tessere magnetiche economici sono compatibili solo con bande magnetiche che contengono dati nel formato definito dallo standard ISO/IEC 7811. Come vedremo, <strong>i dati contenuti nei DM non sono in quel formato</strong>. È quindi necessario trovare un lettore in grado di restituire il contenuto della banda magnetica bit per bit, senza tentare di &ldquo;interpretarlo&rdquo;.</p>
+<h2 id="analisi-del-contenuto">Analisi del contenuto</h2>
+<p>Prima di addentrarsi nel reverse engineering del contenuto della banda magnetica, è utile ripassare brevemente il funzionamento del vecchio <strong>sistema tariffario di Milano</strong> attorno cui i DM di ATM sono stati progettati, per poi descrivere i vari tipi di biglietti esistenti.</p>
+<h3 id="il-sistema-integrato-tariffario-area-milanese">Il Sistema Integrato Tariffario Area Milanese</h3>
+<p>Il SITAM è stato il sistema tariffario in vigore nell&rsquo;area di Milano dal 1989 al 2019. Prevedeva la suddivisione del territorio in <strong>anelli</strong> centrati su Piazza del Duomo, a loro volta suddivisi in unità più piccole, risultando in una caratteristica forma a &ldquo;bersaglio&rdquo;. Eccone una rappresentazione semplificata.</p>
+<p>
+    <span class="image-container">
+        <span class="link">
+            <picture>
+                <source srcset="/sbme-dm/it/sitam_diagram_dark.png" media="(prefers-color-scheme: dark)">
+                <img src="/sbme-dm/it/sitam_diagram_light.png" alt="" style="width: 100%; max-width: 600px">
+            </picture>
+        </span>
+    </span>
+</p>
+<p>Ogni unità di area delimitata da una linea corrisponde a una <strong>semizona</strong>, cioè a &ldquo;mezza zona tariffaria&rdquo;; due semizone costituiscono una zona. Le semizone sono l&rsquo;unità elementare che determina la tariffa del biglietto per spostarsi da un punto all&rsquo;altro. L&rsquo;<strong>area urbana</strong> è costituita da due sole semizone, una interna e una esterna al percorso della linea circolare 90/91.</p>
+<p>A titolo di esempio, uno spostamento lungo il percorso tratteggiato in rosso comprende 5 semizone, di cui 3 fuori dall&rsquo;area urbana. Equivalentemente, si può dire che il percorso comprende la zona urbana e 1½ zone interurbane. Per questo spostamento si sarebbe usato un <strong>biglietto &ldquo;cumulativo&rdquo;</strong>, che comprendeva la zona urbana e un numero variabile di semizone interurbane.</p>
+<p>Purtroppo non tutto è così semplice. Una &ldquo;complicazione&rdquo; degna di nota, che vedremo riflessa nei dati presenti sulla banda magnetica, riguarda la durata dei titoli di viaggio cumulativi. Riprendendo l&rsquo;esempio, un biglietto cumulativo da 1½ zone interurbane aveva una validità di 120 minuti dalla convalida. La <strong>validità in zona urbana</strong> era però limitata a 75 minuti per gli spostamenti dalla città verso l&rsquo;esterno, oppure a 60 minuti per gli spostamenti nella direzione opposta.</p>
+<p>Un&rsquo;altra caratteristica interessante riguarda i biglietti esclusivamente interurbani, che di regola non erano utilizzabili in zona urbana. In alcuni casi, tuttavia, era concesso utilizzarli nella <strong>semizona esterna</strong> dell&rsquo;area urbana per arrivare fino alla linea 90/91. Infine, nonostante i titoli di viaggio fossero utilizzabili su tutta la rete consentendo un numero illimitato di cambi, esistevano una serie di restrizioni che ne forzavano l&rsquo;utilizzo come “<strong>biglietti di sola andata</strong>”; per esempio erano concessi un solo accesso alla metropolitana e al passante ferroviario.</p>
+<p>In generale, il SITAM era ricco di particolarità e di eccezioni su cui evito di dilungarmi per non andare eccessivamente fuori tema. Le poche informazioni che ho presentato qui sono però essenziali per dare un senso e apprezzare meglio la parte che segue.</p>
+<p>A seguito di una legge regionale del 2014<sup id="fnref:12"><a href="#fn:12" class="footnote-ref" role="doc-noteref">12</a></sup>, nel 2019 il SITAM è stato sostituito da un nuovo sistema tariffario integrato, chiamato <strong>STIBM</strong>, che ha portato grandi semplificazioni tra cui l&rsquo;eliminazione delle semizone; ciononostante la struttura dei dati contenuti nei DM (e nelle TSC) è rimasta invariata e continua a basarsi sui concetti del sistema precedente. Inoltre il SITAM non è completamente scomparso: gli abbonamenti urbani e le relative estensioni interurbane sono rimaste in uso<sup id="fnref:13"><a href="#fn:13" class="footnote-ref" role="doc-noteref">13</a></sup>.</p>
+<h3 id="tipi-di-dm">Tipi di DM</h3>
+<p>Ad oggi esistono 4 tipi di DM.</p>
+<ol>
+<li><strong>Trasporti milanesi (epoca SITAM)</strong>. Usato per tutti i titoli di viaggio ATM fino a luglio 2019. Oggi non sono più venduti e quelli esistenti non sono più utilizzabili. Sebbene i DM di questo tipo fossero usati anche per alcune tariffe speciali non SITAM (per esempio per la metro leggera per l&rsquo;ospedale San Raffaele), per semplicità nel seguito mi riferirò a questo tipo di DM come &ldquo;tipo SITAM&rdquo;.</li>
+<li><strong>Solo uscita dalla metro</strong>. Utilizzabile per uscire dai tornelli da chi si dovesse trovare all&rsquo;interno di una stazione della metropolitana senza un titolo di viaggio valido. Consente solo l&rsquo;uscita dalla stessa stazione in cui è stato acquistato entro 10 minuti dall&rsquo;acquisto. È venduto dai distributori situati all&rsquo;interno dell&rsquo;&ldquo;area paganti&rdquo;, che formalmente prendono il nome di Macchine Addizionatrici di Tariffa (MAT)<sup id="fnref:14"><a href="#fn:14" class="footnote-ref" role="doc-noteref">14</a></sup>. Dato l&rsquo;utilizzo estremamente limitato che si può fare di questo tipo di DM, non ho avuto modo di studiarne i dettagli del contenuto e perciò non lo tratterò nel seguito.</li>
+<li><strong>Ferroviario</strong>. Venduto da Trenord (precedentemente da LeNord) e tipicamente valido per un singolo itinerario tra due stazioni della rete ferroviaria regionale.</li>
+<li><strong>Trasporti milanesi (epoca STIBM)</strong>. Introdotti nel luglio 2019 con l&rsquo;entrata in vigore del nuovo sistema tariffario, sostituiscono i biglietti SITAM mantenendone lo stesso modello dei dati. Come per i DM di tipo 1, mi riferirò in modo leggermente improprio a questo tipo di DM come &ldquo;tipo STIBM&rdquo;.</li>
+</ol>
+<h3 id="reverse-engineering-dei-dati">Reverse engineering dei dati</h3>
+<p>La prima cosa fondamentale per un reverse engineering completo di dati sconosciuti è avere una <strong>grande quantità di &ldquo;esemplari&rdquo;</strong>, possibilmente non tutti uguali, in modo da poter fare deduzioni confrontandoli. Per questo motivo durante l&rsquo;estate scorsa ho deciso di mettere da parte i miei fedeli abbonamenti e di cominciare ad acquistare DM per ogni mio spostamento.</p>
+<p><span class="image-container"><span class="link"><img class="img" src="/sbme-dm/collection.jpeg"
+        alt/></span><span class="caption"><span class="title">Alcuni dei biglietti che ho acquistato e utilizzato per le mie analisi.</span></span></span></p>
+<p>La lettura della banda magnetica di un DM, a prescindere dal metodo che si usa, risulta in dati di questo tipo (qui rappresentati in esadecimale):</p>
+<pre tabindex="0"><code>B40BE7803396F26B048008B3E0C0027FC5167D10620000635804EC97FCD8C000000020DDF
+</code></pre><p>Si tratta di <em>36 byte e mezzo</em>, o <strong>292 bit</strong>. Il primo nibble (0xB) e l&rsquo;ultimo (0xF) risultano immediatamente familiari per chi conosce lo standard ISO/IEC 7811: si tratta di due caratteri di controllo, rispettivamente <em><strong>Start Sentinel</strong></em> e <em><strong>End Sentinel</strong></em>, che segnalano l&rsquo;inizio e la fine del contenuto delle tracce 2 e 3 della banda magnetica di una tessera di identificazione. Questo potrebbe essere visto come un&rsquo;indicazione che tutti i dati siano codificati secondo lo stesso standard, ma una rapida prova porta a un risultato senza senso e stronca questa speranza sul nascere:</p>
+<pre><code style="font-variant-ligatures: none;">;40;&gt;7803396?26;048008;3&gt;0&lt;0027?&lt;5167=10620000635804&gt;&lt;97?&lt;=8&lt;000000020==?</code></pre>
+<p>Quasi sicuramente il motivo per cui si è scelti di andare fuori standard è legato all&rsquo;<strong>efficienza</strong>: per ogni singola informazione è stato usato il numero minore possibile di bit, in modo da &ldquo;risparmiare spazio&rdquo;. D&rsquo;altronde quando si hanno a disposizione solo 292 bit, si fa tutto il possibile per sfruttarli al meglio. Conviene quindi proseguire l&rsquo;analisi osservando gli stessi dati come una <strong>sequenza di bit</strong>:</p>
+<pre tabindex="0"><code>1011010000001011111001111000000000110011100101101111001001101011000001001000000000001000101100111110000011000000000000100111111111000101000101100111110100010000011000100000000000000000011000110101100000000100111011001001011111111100110110001100000000000000000000000000000000100000110111011111
+</code></pre><p>Un buon punto di partenza per dare significato alle varie porzioni di bit è quello di osservare i vari <strong>numeri stampati sul biglietto</strong> in questione, convertirli in binario e cercare una corrispondenza in mezzo a quella lunga sequenza. Cominciamo dal fronte del biglietto.</p>
+<p>
+    <span class="image-container">
+        <span class="link">
+            <img src="/sbme-dm/dm_front.png" alt='Lato frontale di un DM' style="width: 100%; max-width: 500px">
+        </span>
+    </span>
+</p>
+<p>I numeri in basso a sinistra, 00103 e 0769971721, convertiti in binario diventano rispettivamente <code>1100111</code> e <code>101101111001001101011000001001</code> e si individuano immediatamente nella parte iniziale dei dati. Il confronto con altri biglietti permette di capire che il primo numero identifica la macchina che ha venduto il biglietto, mentre il secondo è un numero di serie. Il numero in basso a destra, 7609.5, varia a seconda della tariffa ma non è direttamente presente tra i dati della banda magnetica. È invece presente il numero 6095, <code>1011111001111</code>, che in qualche modo gli assomiglia e che allo stesso modo varia a seconda della tariffa.</p>
+<p>Queste corrispondenze tra numeri e porzioni di bit ci rivelano implicitamente anche l&rsquo;<strong>ordine dei bit usato per i dati</strong>, che è quello naturale: il bit meno significativo a destra.</p>
+<p>
+    <span class="image-container">
+        <span class="link">
+            <img src="/sbme-dm/dm_back.png" alt='Lato posteriore di un DM' style="width: 100%; max-width: 750px">
+        </span>
+    </span>
+</p>
+<p>Nessuno dei numeri scritti in grande sotto la banda magnetica è presente tra i dati. In realtà la cosa è comprensibile dato che quei numeri sono pre-stampati sulla carta e molto probabilmente identificano il produttore, il lotto e il numero del biglietto inteso come supporto fisico di cartoncino piuttosto che come titolo di viaggio.</p>
+<p>Volgendo l&rsquo;attenzione al <strong>timbro</strong> notiamo che esso è composto da più lettere e numeri:</p>
+<ul class="list-compact-10">
+<li>Una lettera che varia a seconda del gestore della rete. In questo caso <strong>A</strong> = ATM; le altre possibilità sono T = Trenitalia e F = FNMT, nonostante oggi queste ultime due siano fuse in Trenord.</li>
+<li>Una parte alfanumerica di 4 caratteri, in questo caso <strong>0943</strong>, che varia a seconda della convalidatrice utilizzata.</li>
+<li>Una lettera che varia a seconda del mezzo utilizzato. In questo caso <strong>M</strong> = metropolitana; le altre possibilità sono T = treno, P = passante, B = bus (o altri mezzi di superficie).</li>
+<li>Un numero di 4 cifre, in questo caso <strong>0867</strong>, che varia a seconda della località di convalida. 867 è il codice di PIOLA M2.</li>
+<li>Un numero di 5 cifre, in questo caso <strong>26051</strong>, che rappresenta la data della convalida scritta come giorno, mese e ultima cifra dell&rsquo;anno. 26051 corrisponde al 26/05/2021.</li>
+<li>Un numero di 4 cifre, in questo caso <strong>1702</strong>, che rappresenta l&rsquo;orario della convalida come ora e minuti.</li>
+</ul>
+<p>Trovare una corrispondenza tra queste informazioni e i dati scritti sulla banda magnetica è meno banale, dato che è necessario prima di tutto capire come sono codificati. Cercando i numeri così come sono riportati, l&rsquo;unico che si trova è il codice della località di convalida. Vedremo in seguito dove si trovano gli altri e come sono scritti.</p>
+<p>Credo però di aver chiarito il concetto alla base della mia metodologia: <strong>partire da un&rsquo;informazione nota</strong> e cercare se e dove la si può trovare all&rsquo;interno della sequenza di bit. Si può fare anche il contrario: prendere una porzione di bit, <strong>osservare come cambia</strong> tra due biglietti diversi, e dedurne il significato. Per esempio, prendiamo i primi 4 bit dopo la <em>Start Sentinel</em> di 10 biglietti a caso della mia collezione:</p>
+<ol class="list-compact-10">
+<li><mark style="background-color: rgba(255, 0, 221, 0.31)">(biglietto STIBM)</mark>, <code>0100</code></li>
+<li><mark style="background-color: rgba(6, 193, 0, 0.38)">(biglietto ferroviario)</mark>, <code>0011</code></li>
+<li><mark style="background-color: rgba(255, 0, 221, 0.31)">(biglietto STIBM)</mark>, <code>0100</code></li>
+<li><mark style="background-color: rgba(255, 162, 0, 0.37)">(biglietto SITAM)</mark>, <code>0001</code></li>
+<li><mark style="background-color: rgba(0, 140, 255, 0.44)">(biglietto di uscita dalla metro)</mark>, <code>0010</code></li>
+<li><mark style="background-color: rgba(255, 162, 0, 0.37)">(biglietto SITAM)</mark>, <code>0001</code></li>
+<li><mark style="background-color: rgba(255, 0, 221, 0.31)">(biglietto STIBM)</mark>, <code>0100</code></li>
+<li><mark style="background-color: rgba(6, 193, 0, 0.38)">(biglietto ferroviario)</mark>, <code>0011</code></li>
+<li><mark style="background-color: rgba(6, 193, 0, 0.38)">(biglietto ferroviario)</mark>, <code>0011</code></li>
+<li><mark style="background-color: rgba(255, 0, 221, 0.31)">(biglietto STIBM)</mark>, <code>0100</code></li>
+</ol>
+<p>Notiamo che in tutti i biglietti SITAM quei 4 bit valgono <code>0001</code>. In un biglietto di uscita dalla metro valgono <code>0010</code>. In tutti i biglietti ferroviari valgono <code>0011</code>. In tutti i biglietti STIBM valgono <code>0100</code>. Si deduce che quei 4 bit probabilmente identificano il tipo di biglietto, e l&rsquo;ordine dei valori ha senso se si considera l&rsquo;ordine con cui ogni tipo di biglietto è stato introdotto dalle società di trasporto.</p>
+<p>Continuando in questo modo con costanza e molta pazienza, ho determinato il <strong>significato di quasi ogni singola porzione di bit</strong>. Ce ne sono alcune di cui purtroppo non riesco ad avere la certezza sui dati che rappresentano, perché – per un motivo o per l&rsquo;altro – non sono riuscito a fare un numero di prove sufficientemente grande. C&rsquo;è anche qualche gruppo di bit a 0 che non ho mai visto cambiare; il massimo che ho potuto fare in questi casi è stata un&rsquo;ipotesi ragionata, ma non sempre ci sono riuscito.</p>
+<p style="margin-bottom: 10px">Nel seguito userò le seguenti notazioni per i valori numerici:</p>
+<ul style="margin-bottom: 10px">
+<li>suffisso "b" per i valori in binario (base 2), per esempio 1111011b;</li>
+<li style="margin-top: 0px;">prefisso "0x" per i valori in esadecimale (base 16), per esempio 0x7b;</li>
+<li style="margin-top: 0px;">nessun suffisso o prefisso per i valori in decimale (base 10), per esempio 123.</li>
+</ul>
+<p>Dove non diversamente indicato, quando un valore non è presente viene rappresentato con tutti zeri.</p>
+<table>
+<thead>
+<tr>
+<th>Indice</th>
+<th>Lunghezza</th>
+<th><span style="hyphens: none">Tipo di dato</span></th>
+<th>Descrizione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>4</td>
+<td>-</td>
+<td><em>Start Sentinel</em>, valore fisso: 1011b. Segnala l&rsquo;inizio dei dati.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td>Numero</td>
+<td>Indica il tipo di documento.<br><ul style="margin-bottom: 0"><li style="margin-top: 0">1: biglietto SITAM</li><li style="margin-top: 0">2: biglietto di sola uscita dalla metro</li><li style="margin-top: 0">3: biglietto ferroviario</li><li style="margin-top: 0">4: biglietto STIBM</li></ul></td>
+</tr>
+<tr>
+<td>8</td>
+<td>1</td>
+<td>Booleano</td>
+<td>Indica se si tratta di un documento di test (usato per verificare il funzionamento delle convalidatrici).</td>
+</tr>
+<tr>
+<td>9</td>
+<td>16</td>
+<td>Numero</td>
+<td>Identificativo della tariffa. Non corrisponde direttamente al codice stampato sul fronte del biglietto, ma i due valori sono in relazione 1:1.</td>
+</tr>
+<tr>
+<td>25</td>
+<td>16</td>
+<td>Numero</td>
+<td>Identificativo della macchina di vendita. Corrisponde al numero di 5 cifre stampato sul fronte del biglietto, prima del numero di serie.</td>
+</tr>
+<tr>
+<td>41</td>
+<td>32</td>
+<td>Numero</td>
+<td>Numero di serie. Corrisponde al numero di 10 cifre stampato sul fronte del biglietto.</td>
+</tr>
+<tr>
+<td>73</td>
+<td>1</td>
+<td>Booleano</td>
+<td>Indica se il documento è stato invalidato, probabilmente perché il numero seriale è stato inserito in una blacklist.</td>
+</tr>
+<tr>
+<td>74</td>
+<td>10</td>
+<td>Numero</td>
+<td>Numero di viaggi residui. Posto al valore fittizio 1111111111b (1023) per i titoli di viaggio che consentono un numero illimitato di viaggi.</td>
+</tr>
+<tr>
+<td>84</td>
+<td>14</td>
+<td>Data</td>
+<td>Data della prima convalida*.</td>
+</tr>
+<tr>
+<td>98</td>
+<td>11</td>
+<td>Ora</td>
+<td>Ora dell&rsquo;ultima convalida.</td>
+</tr>
+<tr>
+<td>109</td>
+<td>6</td>
+<td>Numero</td>
+<td>Codice dell&rsquo;eventuale errore verificatosi durante l&rsquo;ultima convalida.</td>
+</tr>
+<tr>
+<td>115</td>
+<td>4</td>
+<td>Numero</td>
+<td>Tipologia dell&rsquo;ultimo mezzo utilizzato (treno, metro, mezzi di superficie, ecc).</td>
+</tr>
+<tr>
+<td>119</td>
+<td>1</td>
+<td>Booleano</td>
+<td>Indica se l&rsquo;ultima convalida è avvenuta in modalità simulata/degradata.<br /><a href="#convalida-simulatadegradata" >Vedi paragrafo &ldquo;convalida simulata/degradata&rdquo;</a></td>
+</tr>
+<tr>
+<td>120</td>
+<td>11</td>
+<td>Ora</td>
+<td>Ora della prima convalida*.</td>
+</tr>
+<tr>
+<td>131</td>
+<td>4</td>
+<td>Numero</td>
+<td>Contatore convalide. Riparte da zero quando supera il valore massimo di 1111b (15).</td>
+</tr>
+<tr>
+<td>135</td>
+<td>14</td>
+<td>Data</td>
+<td>Data di inizio validità.<br /><a href="#validit%c3%a0-e-scadenza-dei-dm-non-ancora-utilizzati" >Vedi paragrafo &ldquo;validità e scadenza dei DM non ancora utilizzati&rdquo;</a></td>
+</tr>
+<tr>
+<td>149</td>
+<td>14</td>
+<td>Data</td>
+<td>Data di scadenza oppure data limite di utilizzo.<br /><a href="#validit%c3%a0-e-scadenza-dei-dm-non-ancora-utilizzati" >Vedi paragrafo &ldquo;validità e scadenza dei DM non ancora utilizzati&rdquo;</a></td>
+</tr>
+<tr>
+<td>163</td>
+<td>4</td>
+<td>Numero</td>
+<td>Identificativo dell&rsquo;azienda di vendita (ATM, ex Trenitalia, ex FNMT).</td>
+</tr>
+<tr>
+<td>167</td>
+<td>109</td>
+<td>-</td>
+<td><em>Dati variabili a seconda del tipo di biglietto (vedi paragrafi successivi)</em></td>
+</tr>
+<tr>
+<td>276</td>
+<td>4</td>
+<td>-</td>
+<td>Separatore, valore fisso: 0000b.</td>
+</tr>
+<tr>
+<td>280</td>
+<td>8</td>
+<td>-</td>
+<td>Checksum.<br /><a href="#checksum" >Vedi paragrafo &ldquo;checksum&rdquo;</a></td>
+</tr>
+<tr>
+<td>288</td>
+<td>4</td>
+<td>-</td>
+<td><em>End Sentinel</em>, valore fisso: 1111b. Segnala la fine dei dati.</td>
+</tr>
+</tbody>
+</table>
+<p>*Con &ldquo;prima convalida&rdquo;, qui e nel seguito, si intende la <strong>prima convalida del viaggio in corso</strong> e non il primo utilizzo del biglietto. Per esempio, nel caso di un carnet da 10 viaggi, ognuna delle convalide che dà inizio a uno dei 10 viaggi è da considerarsi una &ldquo;prima convalida&rdquo;. In altre parole, una convalida è una &ldquo;prima convalida&rdquo; se viene aggiunto un nuovo timbro sul retro del biglietto.</p>
+<h4 id="biglietti-sitam-e-stibm-tipi-1-e-4">Biglietti SITAM e STIBM (tipi 1 e 4)</h4>
+<table>
+<thead>
+<tr>
+<th>Indice</th>
+<th>Lunghezza</th>
+<th><span style="hyphens: none">Tipo di dato</span></th>
+<th>Descrizione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>167</td>
+<td>8</td>
+<td>Numero</td>
+<td>Numero di semizone autorizzate fuori dall&rsquo;area urbana. Usato nei biglietti SITAM interurbani e cumulativi.</td>
+</tr>
+<tr>
+<td>175</td>
+<td>6</td>
+<td>Numero</td>
+<td>Numero di viaggi effettuati nel periodo corrente. Usato per le tariffe SITAM &ldquo;2x6&rdquo;, che consentivano un massimo di due viaggi al giorno per 6 giorni della stessa settimana.</td>
+</tr>
+<tr>
+<td>181</td>
+<td>6</td>
+<td>Numero</td>
+<td>Identificativo dell&rsquo;ultima operazione (entrata, coincidenza, uscita, ecc).</td>
+</tr>
+<tr>
+<td>187</td>
+<td>10</td>
+<td>Numero</td>
+<td>Identificativo dell&rsquo;ultima linea utilizzata. Per i mezzi di superficie solitamente (ma non sempre) coincide con il numero della linea.</td>
+</tr>
+<tr>
+<td>197</td>
+<td>8</td>
+<td>(misto)</td>
+<td>Semizone attraversate all&rsquo;interno e all&rsquo;esterno dell&rsquo;area urbana. Usato nei biglietti SITAM interurbani e cumulativi.<br /><a href="#codifica-delle-semizone-visitate" >Vedi paragrafo &ldquo;codifica delle semizone visitate&rdquo;</a></td>
+</tr>
+<tr>
+<td>205</td>
+<td>1</td>
+<td>Booleano</td>
+<td>Indica se dalla prima convalida è stata utilizzata la metropolitana almeno una volta. Usato nei biglietti SITAM per applicare il vincolo di un solo accesso in metropolitana.</td>
+</tr>
+<tr>
+<td>206</td>
+<td>1</td>
+<td>Booleano</td>
+<td>Indica se dalla prima convalida è stato utilizzato il treno almeno una volta. Usato nei biglietti SIAM per applicare il vincolo di un solo accesso alle ferrovie.</td>
+</tr>
+<tr>
+<td>207</td>
+<td>11</td>
+<td>Numero</td>
+<td>Identificativo della località dell&rsquo;ultima convalida.</td>
+</tr>
+<tr>
+<td>218</td>
+<td>2</td>
+<td>Numero</td>
+<td><em>Forse:</em> semizona di riferimento della località dell&rsquo;ultima convalida, utile specialmente per determinare la semizona considerata nel caso di località poste sul confine tra due semizone.</td>
+</tr>
+<tr>
+<td>220</td>
+<td>11</td>
+<td>Ora</td>
+<td>Ora della prima convalida all&rsquo;interno dell&rsquo;area urbana. Usato nei biglietti SITAM cumulativi per limitare la durata del titolo di viaggio in zona urbana.</td>
+</tr>
+<tr>
+<td>231</td>
+<td>11</td>
+<td>Numero</td>
+<td>Identificativo della località della prima convalida.</td>
+</tr>
+<tr>
+<td>242</td>
+<td>2</td>
+<td>Numero</td>
+<td><em>Forse:</em> semizona di riferimento della località della prima convalida, utile specialmente per determinare la semizona considerata nel caso di località poste sul confine tra due semizone.</td>
+</tr>
+<tr>
+<td>244</td>
+<td>10</td>
+<td>Numero</td>
+<td><em>Forse:</em> identificativo della corsa del veicolo su cui è stata effettuata l&rsquo;ultima convalida. Nel corso dei test effettuati questo gruppo di bit non è mai stato valorizzato.</td>
+</tr>
+<tr>
+<td>254</td>
+<td>16</td>
+<td>Numero</td>
+<td>Identificativo del veicolo su cui è stata effettuata l&rsquo;ultima convalida. I 13 bit meno significativi corrispondono al numero, tipicamente di 4 cifre, ben visibile sulla livrea e all&rsquo;interno dei mezzi di superficie.</td>
+</tr>
+<tr>
+<td>270</td>
+<td>1</td>
+<td>Booleano</td>
+<td>Indica se dalla prima convalida è stato utilizzato l&rsquo;autobus almeno una volta.</td>
+</tr>
+<tr>
+<td>271</td>
+<td>4</td>
+<td>Numero</td>
+<td>Numero di passeggeri autorizzati. In caso di accesso tramite tornelli, una singola convalida consente il passaggio consecutivo di questo numero di persone.</td>
+</tr>
+<tr>
+<td>275</td>
+<td>1</td>
+<td>-</td>
+<td><em>Forse:</em> inutilizzato.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="biglietto-ferroviario-tipo-3">Biglietto ferroviario (tipo 3)</h4>
+<table>
+<thead>
+<tr>
+<th>Indice</th>
+<th>Lunghezza</th>
+<th><span style="hyphens: none">Tipo di dato</span></th>
+<th>Descrizione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>167</td>
+<td>2</td>
+<td>Numero</td>
+<td>Classe viaggiatori.</td>
+</tr>
+<tr>
+<td>169</td>
+<td>6</td>
+<td>Numero</td>
+<td>Numero di viaggi effettuati nel periodo corrente.</td>
+</tr>
+<tr>
+<td>175</td>
+<td>6</td>
+<td>Numero</td>
+<td>Identificativo dell&rsquo;ultima operazione (entrata, coincidenza, uscita, ecc).</td>
+</tr>
+<tr>
+<td>181</td>
+<td>10</td>
+<td>Numero</td>
+<td>Identificativo dell&rsquo;ultima linea utilizzata. Solitamente posto al valore 1000, che rappresenta le linee ferroviarie in generale.</td>
+</tr>
+<tr>
+<td>191</td>
+<td>11</td>
+<td>Numero</td>
+<td>Identificativo della località dell&rsquo;ultima convalida.</td>
+</tr>
+<tr>
+<td>202</td>
+<td>11</td>
+<td>Numero</td>
+<td>Identificativo della località della prima convalida.</td>
+</tr>
+<tr>
+<td>213</td>
+<td>4</td>
+<td>Numero</td>
+<td>Numero di passeggeri autorizzati. In caso di accesso tramite tornelli, una singola convalida consente il passaggio consecutivo di questo numero di persone.</td>
+</tr>
+<tr>
+<td>217</td>
+<td>11</td>
+<td>Numero</td>
+<td>Identificativo della località di origine.</td>
+</tr>
+<tr>
+<td>228</td>
+<td>11</td>
+<td>Numero</td>
+<td>Identificativo della località di destinazione.</td>
+</tr>
+<tr>
+<td>239</td>
+<td>11</td>
+<td>Numero</td>
+<td>Identificativo della prima località di transito intermedia.</td>
+</tr>
+<tr>
+<td>250</td>
+<td>11</td>
+<td>Numero</td>
+<td>Identificativo della seconda località di transito intermedia.</td>
+</tr>
+<tr>
+<td>261</td>
+<td>11</td>
+<td>Numero</td>
+<td>Distanza chilometrica autorizzata.</td>
+</tr>
+<tr>
+<td>272</td>
+<td>2</td>
+<td>Numero</td>
+<td><em>Forse:</em> direzione dell&rsquo;ultimo viaggio per i biglietti di andata e ritorno.</td>
+</tr>
+<tr>
+<td>274</td>
+<td>1</td>
+<td>-</td>
+<td><em>Sconosciuto.</em></td>
+</tr>
+<tr>
+<td>275</td>
+<td>1</td>
+<td>-</td>
+<td><em>Forse:</em> inutilizzato.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="approfondimento-di-alcuni-aspetti">Approfondimento di alcuni aspetti</h3>
+<h4 id="codifica-di-data-e-ora">Codifica di data e ora</h4>
+<p>La codifica di date e orari è conforme allo standard EN 1545 (tipi di dato elementari DateStamp e TimeStamp). Le date sono codificate in 14 bit come numero di <strong>giorni trascorsi dal 1° gennaio 1997</strong>. Gli orari sono codificati in 11 bit come numero di <strong>minuti trascorsi da mezzanotte</strong>.</p>
+<p>Siccome per gli orari il valore 00000000000b è significativo (rappresenta, appunto, mezzanotte), quando è necessario lasciare un dato di tipo ora non valorizzato si usa il valore fittizio 11111111111b (2047) per evitare ambiguità. Si noti infatti che il numero massimo di minuti trascorsi da mezzanotte è 1439 (alle 23:59), e i valori più alti sono inutilizzati. Un caso di questo genere si verifica con l&rsquo;ora della prima convalida all&rsquo;interno dell&rsquo;area urbana nei biglietti SITAM e STIBM, se il documento è stato convalidato solo fuori dall&rsquo;area urbana.</p>
+<h4 id="convalida-simulatadegradata">Convalida simulata/degradata</h4>
+<p>Per poter applicare correttamente i vincoli del sistema tariffario, è ovvio che le convalidatrici devono sapere <em><strong>dove si trovano</strong></em> geograficamente. Per quelle fisse installate nelle stazioni non c&rsquo;è problema; sui mezzi di superficie, costantemente in movimento, la questione è un po&rsquo; più complessa. Le convalidatrici di autobus e tram sono connesse al sistema informativo di bordo, che comprende un <strong>impianto GPS</strong> per localizzare il mezzo in ogni momento. Il sistema di bordo determina la zona tariffaria corretta a seconda della posizione attuale, e la configura &ldquo;in tempo reale&rdquo; sulle convalidatrici.</p>
+<p>Quando tutto funziona correttamente, la prima linea del display delle convalidatrici riporta l&rsquo;ultima località impostata dal sistema di bordo. In alcuni casi tuttavia – solitamente per via di malfunzionamenti – il sistema di bordo potrebbe non essere in grado di determinare la propria posizione, oppure potrebbe non essere in grado di comunicarla alle convalidatrici. Trascorso un certo periodo di tempo senza ricevere aggiornamenti, le convalidatrici entrano in <strong>modalità di funzionamento &ldquo;degradato&rdquo;</strong>: continuano a essere utilizzabili dai viaggiatori ma, non essendo più in grado di stabilire dove si trovano, non effettuano i controlli di validità spaziale dei titoli di viaggio. Inoltre, un biglietto convalidato in modalità degradata non riporta la località di convalida tra i dati nella banda magnetica e sul timbro<sup id="fnref:15"><a href="#fn:15" class="footnote-ref" role="doc-noteref">15</a></sup>.</p>
+<p><span class="image-container"><span class="link"><img class="img" src="/sbme-dm/cnv_degradata.jpg"
+        alt/></span><span class="caption"><span class="title">Convalidatrice in modalità di funzionamento degradato. Foto di Giovanni Dall'Orto (ritagliata), licenza <a href='https://creativecommons.org/licenses/by-sa/2.5/it/legalcode' target='blank'>CC BY-SA</a>.</span></span></span></p>
+<p>Una convalida può avvenire in modalità degradata anche per via di alcune circostanze particolari non dovute a un malfunzionamento, per esempio:</p>
+<ul class="list-compact-10">
+<li>Nel caso di biglietti acquistati e <strong>convalidati tramite app</strong> o SMS, e successivamente stampati presso un distributore automatico. In questo caso il biglietto viene stampato già convalidato e riporta sul fronte la data e l&rsquo;ora della convalida, in sostituzione del timbro.</li>
+<li>Nei mezzi di superficie in uso per corse straordinarie, in cui sistema di bordo potrebbe non conoscere la linea e l&rsquo;itinerario.</li>
+<li>Nelle convalidatrici di prova o usate come &ldquo;demo&rdquo;, e quindi lasciate volutamente prive di configurazione, come quelle esposte durante il Porte Aperte 2019 di ATM<sup id="fnref:16"><a href="#fn:16" class="footnote-ref" role="doc-noteref">16</a></sup>.</li>
+</ul>
+<p>In questi casi altri dati che possono non essere presenti sono il numero della linea, l&rsquo;identificativo del veicolo e il tipo di mezzo utilizzato.</p>
+<h4 id="validità-e-scadenza-dei-dm-non-ancora-utilizzati">Validità e scadenza dei DM non ancora utilizzati</h4>
+<p>Un biglietto non ancora utilizzato ha dei limiti di validità temporali che possono essere definiti in due modi differenti, a seconda della tariffa.</p>
+<p>Nelle tariffe con validità fissa i due valori alle posizioni 135 e 149 (vedi tabella) sono entrambi presenti fin dal momento dell&rsquo;acquisto e indicano rispettivamente la <strong>data di inizio validità</strong> (che per i biglietti semplici coincide con la data di acquisto) e la <strong>data di scadenza</strong>, che varia a seconda della tariffa e dell&rsquo;azienda che ha venduto il biglietto. Per chiarezza, specifico che un biglietto <em>scaduto</em> è un biglietto &ldquo;da buttare&rdquo;; anche nel caso, per esempio, di un carnet con ancora viaggi residui.</p>
+<p>Nelle tariffe con validità fluttuante<sup id="fnref1:15"><a href="#fn:15" class="footnote-ref" role="doc-noteref">15</a></sup> la data di inizio validità non è presente al momento dell&rsquo;acquisto; viene valorizzata <strong>solo al primo utilizzo</strong>. Il valore che prima indicava la data di scadenza, qui assume invece il significato di &ldquo;data limite di utilizzo&rdquo;, ovvero di data entro cui il biglietto deve essere utilizzato <strong>per la prima volta</strong>; dopo il primo utilizzo lo si può continuare ad usare anche oltre tale data. Questo non significa che il biglietto non scada: una scadenza c&rsquo;è, ma anzi che essere scritta esplicitamente, essa viene calcolata dal tempo trascorso dalla data di inizio validità. Per esempio, i carnet STIBM venduti da ATM devono essere utilizzati per la prima volta entro 2 anni dalla data di acquisto, e scadono dopo altri 2 anni dal primo utilizzo. Tutte le tariffe STIBM che ho analizzato usano questo tipo di validità temporale.</p>
+<p>È curioso il fatto che, in contrasto con quanto emerge qui, sia Trenord<sup id="fnref:17"><a href="#fn:17" class="footnote-ref" role="doc-noteref">17</a></sup> sia ATM<sup id="fnref:18"><a href="#fn:18" class="footnote-ref" role="doc-noteref">18</a></sup> dichiarino che i biglietti non abbiano alcuna scadenza prima della convalida. D&rsquo;altra parte io ho potuto verificare con certezza che i vincoli di validità vengono controllati dalle convalidatrici, che restituiscono gli errori <code>DOCUMENTO SCADUTO</code> (codice 28) in caso di data di scadenza superata e <code>NON PIU UTILIZZABILE</code> (codice 44) in caso di data limite di utilizzo superata. È possibile che il motivo di questa discrepanza sia da cercare nel fatto che i DM sono pensati per un uso a breve termine, e che difficilmente qualcuno comprerà un biglietto da usare a diversi anni di distanza, anche perché il cartoncino termico su cui sono stampati ha una durevolezza limitata. Inoltre è possibile che, se ci si trovi davvero con un DM scaduto o non più utilizzabile, ne si possa chiedere la sostituzione.</p>
+<h4 id="codifica-delle-semizone-visitate">Codifica delle semizone visitate</h4>
+<p>La codifica di questa informazione è stata uno degli aspetti che mi ha creato maggiore difficoltà, principalmente perché non è più utilizzata negli attuali biglietti STIBM. Questo significa che non ho potuto applicare la solita metodologia di acquistare biglietti, usarli in circostanze diverse e studiare come cambia il contenuto; ho dovuto invece affidarmi esclusivamente a <strong>vecchi biglietti SITAM</strong> già usati di cui ho dovuto ricostruire la &ldquo;storia&rdquo;. La complessità del sistema tariffario di riferimento certamente non è stata d&rsquo;aiuto; per questo motivo non ho potuto verificare con ragionevole certezza che l&rsquo;ipotesi che sto per descrivere sia esatta in ogni suo dettaglio.</p>
+<p>Gli 8 bit che costituiscono questo dato sono suddivisi in due parti. I 3 bit più significativi sono da interpretare come una <strong>bitmap</strong> e indicano quali semizone interne dell&rsquo;area urbana sono state visitate. In particolare, i 3 bit indicano (dal più al meno significativo):</p>
+<ol class="list-compact-10">
+<li>se è stata attraversata la semizona <strong>interna</strong> dell&rsquo;area urbana;</li>
+<li>se è stata attraversata la semizona <strong>esterna</strong> dell&rsquo;area urbana nel contesto di un biglietto cumulativo, oppure nel contesto di un biglietto interurbano la cui prima convalida è avvenuta nella stessa semizona;</li>
+<li>se è stata attraversata la semizona <strong>esterna</strong> dell&rsquo;area urbana nel contesto di un biglietto interurbano la cui prima convalida è avvenuta fuori dall&rsquo;area urbana.</li>
+</ol>
+<p>I 5 bit rimanenti sono invece da interpretare come intero e indicano il numero complessivo di semizone attraversate <strong>fuori dall&rsquo;area urbana</strong>.</p>
+<p>È interessante notare che, ad ogni convalida, la convalidatrice non si limita ad aggiornare questo dato in base alla semizona in cui ci si trova, ma considera anche tutte le semizone che devono esser state attraversate per arrivarci partendo dalla località della convalida precedente. Questo significa che, plausibilmente, la memoria delle convalidatrici contiene la distanza (in termini di semizone) tra ogni possibile coppia di località.</p>
+<h4 id="checksum">Checksum</h4>
+<p>Il checksum è usato dai dispositivi che leggono e scrivono DM per <strong>verificare l&rsquo;integrità dei dati</strong>. Siccome la banda magnetica è un sistema di memorizzazione particolarmente suscettibile a interferenze esterne, è fondamentale accertarsi che i dati memorizzati non si siano corrotti e che siano stati letti o scritti correttamente.</p>
+<p>Il checksum usato per i DM si calcola eseguendo lo xor a gruppi di 8 bit dei dati memorizzati dopo la <em>Start Sentinel</em> e prima del separatore fisso 0000b (ovvero dei bit compresi tra gli indici 4 e 275, estremi inclusi: 35 byte in totale); infine il risultato va messo in xor con il valore costante 0x7b (123).</p>
+<h2 id="conclusioni-e-ringraziamenti">Conclusioni e ringraziamenti</h2>
+<p>Sebbene io sia convinto di aver fatto tutto il possibile per raccogliere e riportare informazioni complete e accurate, sono consapevole che ciò che ho presentato non rappresenta minimamente una spiegazione esaustiva del funzionamento del SBME – o anche solo della parte relativa ai biglietti magnetici. Si tratta di un sistema complicato ma che nasconde efficacemente la propria complessità, e questo rende la vita difficile a un <em>outsider</em> curioso di scoprire come funzionano le cose. A tal proposito, nell&rsquo;improbabile caso in cui una delle persone che ha lavorato alla progettazione del SBME stia leggendo questo post, sarebbe per me un immenso piacere poter fare una chiacchierata: ci sono ancora tante curiosità a cui da solo non sono riuscito a trovare risposta.</p>
+<p>Spero di essere riuscito a trasmettere qualche informazione interessante alla nicchia di persone che ha avuto la pazienza di arrivare fino a qui e, come sempre, mi auguro che il mio lavoro possa essere di ispirazione a chi abbia in mente di fare qualcosa di simile – magari per i biglietti dei trasporti di un&rsquo;altra città o regione.</p>
+<p>Questo post non sarebbe potuto essere così dettagliato senza il prezioso contributo di alcune persone, che tengo a ringraziare qui.</p>
+<ul class="list-compact-10">
+<li><em>S. B.</em>, per avermi aiutato durante tutto lo svolgimento delle mie ricerche ad acquistare biglietti e a usarli in giro per Milano e per la Lombardia.</li>
+<li><em>Heavy Crowd</em>, per aver messo a mia disposizione un&rsquo;enorme collezione di vecchi biglietti SITAM.</li>
+<li>Lo staff del sito TPLITALIA<sup id="fnref1:12"><a href="#fn:12" class="footnote-ref" role="doc-noteref">12</a></sup>, per avermi illustrato in modo particolarmente approfondito il regolamento del SITAM.</li>
+<li><em>bebora</em>, per avermi prestato un biglietto da analizzare.</li>
+</ul>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p><a href="https://www.aep-italia.it/wp-content/uploads/2016/06/2016.06.22-I-sistemi-AEP-che-ancora-non-conoscete.pdf" target="_blank">https://www.aep-italia.it/wp-content/uploads/2016/06/2016.06.22-I-sistemi-AEP-che-ancora-non-conoscete.pdf</a>&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a>&#160;<a href="#fnref1:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="https://www.atm.it/it/ImpreseEFornitori/SistemiDiQualificazione/Modifiche/SPECIFICA%20TECNICA_468.pdf" target="_blank">https://www.atm.it/it/ImpreseEFornitori/SistemiDiQualificazione/Modifiche/SPECIFICA%20TECNICA_468.pdf</a>&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p><a href="https://www.comune.cusano-milanino.mi.it/wp-content/uploads/2012/10/pdf_R09Db008IMR0_ImpSpecialiTLC.pdf" target="_blank">https://www.comune.cusano-milanino.mi.it/wp-content/uploads/2012/10/pdf_R09Db008IMR0_ImpSpecialiTLC.pdf</a>&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p><a href="https://www.tisseo-collectivites.fr/sites/default/files/D.2020.02.05.8.11.pdf" target="_blank">https://www.tisseo-collectivites.fr/sites/default/files/D.2020.02.05.8.11.pdf</a>&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:5">
+<p><a href="https://www.ebay.it/itm/ASCOM-PROXIBUS-MIFARE-BUS-TRAIN-FARE-TICKET-VALIDATOR-RANGE-VPE-413/153785769735" target="_blank">https://www.ebay.it/itm/ASCOM-PROXIBUS-MIFARE-BUS-TRAIN-FARE-TICKET-VALIDATOR-RANGE-VPE-413/153785769735</a>&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:6">
+<p><a href="https://web.archive.org/web/20210925123840/https://www.xerox.com/downloads/europe/events/transport-publics/VP420-EN.pdf" target="_blank">https://web.archive.org/web/20210925123840/https://www.xerox.com/downloads/europe/events/transport-publics/VP420-EN.pdf</a>&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:7">
+<p><a href="https://www.bandi.regione.lombardia.it/procedimenti/new/bandi/bandi/trasporti-infrastrutture/mobilita-trasporti-sostenibili/bando-sviluppo-sistemi-bigliettazione-elettronica-interoperabili-RLAD2020012590" target="_blank">https://www.bandi.regione.lombardia.it/procedimenti/new/bandi/bandi/trasporti-infrastrutture/mobilita-trasporti-sostenibili/bando-sviluppo-sistemi-bigliettazione-elettronica-interoperabili-RLAD2020012590</a>&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:8">
+<p><a href="https://web.archive.org/web/20201001045317/https://www.trenord.it/it/media-news/notizie/cop.aspx" target="_blank">https://web.archive.org/web/20201001045317/https://www.trenord.it/it/media-news/notizie/cop.aspx</a>&#160;<a href="#fnref:8" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:9">
+<p><a href="https://www.atm.it/it/ImpreseEFornitori/SistemiDiQualificazione/Disciplinare/DISCIPLINARE_472.pdf" target="_blank">https://www.atm.it/it/ImpreseEFornitori/SistemiDiQualificazione/Disciplinare/DISCIPLINARE_472.pdf</a>&#160;<a href="#fnref:9" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:10">
+<p><a href="https://www.q-card.com/about-us/magnetic-stripe-glossary/page.aspx?id=1456" target="_blank">https://www.q-card.com/about-us/magnetic-stripe-glossary/page.aspx?id=1456</a>&#160;<a href="#fnref:10" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:11">
+<p><a href="https://www.atm.it/it/ImpreseEFornitori/SistemiDiQualificazione/Modifiche/CHIARIMENTI_I_705.pdf" target="_blank">https://www.atm.it/it/ImpreseEFornitori/SistemiDiQualificazione/Modifiche/CHIARIMENTI_I_705.pdf</a>&#160;<a href="#fnref:11" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:12">
+<p><a href="https://normelombardia.consiglio.regione.lombardia.it/NormeLombardia/Accessibile/main.aspx?iddoc=rr002014061000004&amp;view=showsum" target="_blank">https://normelombardia.consiglio.regione.lombardia.it/NormeLombardia/Accessibile/main.aspx?iddoc=rr002014061000004&view=showsum</a>&#160;<a href="#fnref:12" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a>&#160;<a href="#fnref1:12" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:13">
+<p><a href="https://www.atm.it/it/ViaggiaConNoi/Documents/stibm%20brochure.pdf" target="_blank">https://www.atm.it/it/ViaggiaConNoi/Documents/stibm%20brochure.pdf</a>&#160;<a href="#fnref:13" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:14">
+<p><a href="https://files.comune.monza.it/M5/08%20Impianti/9%20impianti%20speciali/DM-0237_03%20Schema%20rettificato%20linea%20controllo%20viaggiatori%20distribuzione%20apparati.pdf" target="_blank">https://files.comune.monza.it/M5/08%20Impianti/9%20impianti%20speciali/DM-0237_03%20Schema%20rettificato%20linea%20controllo%20viaggiatori%20distribuzione%20apparati.pdf</a>&#160;<a href="#fnref:14" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:15">
+<p><a href="https://www.ctpi.it/img/upload/allegati/4.All.A_CardDataModel.pdf" target="_blank">https://www.ctpi.it/img/upload/allegati/4.All.A_CardDataModel.pdf</a>&#160;<a href="#fnref:15" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a>&#160;<a href="#fnref1:15" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:16">
+<p><a href="https://www.atm.it/it/AtmNews/AtmInforma/Pagine/porteaperte2019.aspx" target="_blank">https://www.atm.it/it/AtmNews/AtmInforma/Pagine/porteaperte2019.aspx</a>&#160;<a href="#fnref:16" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:17">
+<p><a href="https://web.archive.org/web/20210929135657/https://www.trenord.it/biglietti/titoli-di-viaggio/biglietti/" target="_blank">https://web.archive.org/web/20210929135657/https://www.trenord.it/biglietti/titoli-di-viaggio/biglietti/</a>&#160;<a href="#fnref:17" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:18">
+<p><a href="https://web.archive.org/web/20200630145305/https://twitter.com/atm_informa/status/1277974721259167744" target="_blank">https://web.archive.org/web/20200630145305/https://twitter.com/atm_informa/status/1277974721259167744</a>&#160;<a href="#fnref:18" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div></article><section class="article labels"><a class="tag" href=/it/tags/reverse-engineering/>reverse engineering</a><a class="tag" href=/it/tags/access-control/>access control</a><a class="tag" href=/it/tags/atmmilano/>atmmilano</a></section>
+
+
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<div>
+<span style="color: silver">Condividi post: </span><div id="share-buttons">
+<div class="twitter" title="Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https%3A%2F%2Fblog.jacopo.io%2Fit%2Fpost%2Fsbme-dm%2F%20%E2%80%93%20by%20%40jacopoj_');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jacopo.io%2Fit%2Fpost%2Fsbme-dm%2F');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="E-mail" onclick="window.open('mailto:?body=https%3A%2F%2Fblog.jacopo.io%2Fit%2Fpost%2Fsbme-dm%2F');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+</div>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/it/post/smart-pos/"><span class="iconfont icon-article"></span>[Video] Exploring and Exploiting an Android “Smart POS” Payment Terminal</a></p><p><a class="link" href="/it/post/spid-google-authenticator/"><span class="iconfont icon-article"></span>SPID e Google Authenticator: quando l'interoperabilità viene ostacolata di proposito</a></p></section></div></section><section id="footer">
+    <div class="footer-wrap"><div class="details social-links"><a class="item" href="https://github.com/jacopo-j" target="_blank"><span class="iconfont icon-github"></span>&nbsp;jacopo-j</a><a rel="me" class="item" href="https://infosec.exchange/@jacopo" target="_blank"><span class="iconfont icon-mastodon"></span>&nbsp;@jacopo@infosec.exchange</a><a class="item" href="https://twitter.com/jacopoj_" target="_blank"><span class="iconfont icon-twitter"></span>&nbsp;@jacopoj_</a><a class="item" href="https://www.linkedin.com/in/jacopoj" target="_blank"><span class="iconfont icon-linkedin"></span>&nbsp;jacopoj</a><a class="item" href="https://jacopo.io/contact/?type=blog&amp;locale=it" target="_blank"><span class="iconfont icon-email"></span>&nbsp;E-mail</a><a class="item" href="/it/post/index.xml" target="_blank"><span class="iconfont icon-rss"></span>&nbsp;RSS</a></div><p class="copyright">© 2018-2024 <a href='https://jacopo.io' target='_blank'>Jacopo Jannone</a></p></div>
+</section></body>
+
+</html>

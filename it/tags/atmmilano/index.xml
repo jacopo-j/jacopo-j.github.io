@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Atmmilano on Jacopo Jannone - blog</title>
+    <link>https://blog.jacopo.io/it/tags/atmmilano/</link>
+    <description>Recent content in Atmmilano on Jacopo Jannone - blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>it</language>
+    <copyright>© 2018-2024 Jacopo Jannone</copyright>
+    <lastBuildDate>Tue, 04 Jan 2022 00:00:00 +0000</lastBuildDate>
+    
+        <atom:link href="https://blog.jacopo.io/it/tags/atmmilano/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Analisi dei biglietti magnetici usati per i trasporti in Lombardia</title>
+      <link>https://blog.jacopo.io/it/post/sbme-dm/</link>
+      <pubDate>Tue, 04 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/it/post/sbme-dm/</guid>
+      <description>&lt;p&gt;Una banda magnetica su un biglietto usa e getta potrebbe sembrare una cosa piuttosto noiosa e poco degna di essere studiata. Ogni tanto però la curiosità prevale, una scoperta tira l&amp;rsquo;altra e in men che non si dica ci si trova a viaggiare non per lavoro o per diletto, ma per accumulare biglietti da analizzare. Ecco tutto ciò che ho scoperto sul mondo che c&amp;rsquo;è dietro.&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>Vulnerabilità nell&#39;app di ATM Milano</title>
+      <link>https://blog.jacopo.io/it/post/atm-app-vulnerability/</link>
+      <pubDate>Tue, 18 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/it/post/atm-app-vulnerability/</guid>
+      <description>&lt;p&gt;Una serie di errori di progettazione nell&amp;rsquo;app di ATM Milano permetteva a chiunque di accedere ai dati e ai biglietti degli utenti semplicemente conoscendone l&amp;rsquo;indirizzo e-mail. Nel frattempo, alcune apparenti misure di sicurezza rendevano le vulnerabilità meno facili da individuare e da sfruttare.&lt;/p&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>

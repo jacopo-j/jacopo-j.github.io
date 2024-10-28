@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Spid on Jacopo Jannone - blog</title>
+    <link>https://blog.jacopo.io/en/tags/spid/</link>
+    <description>Recent content in Spid on Jacopo Jannone - blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>© 2018-2024 Jacopo Jannone</copyright>
+    <lastBuildDate>Tue, 09 Mar 2021 00:00:00 +0000</lastBuildDate>
+    
+        <atom:link href="https://blog.jacopo.io/en/tags/spid/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>SPID and Google Authenticator: When Interoperability Is Intentionally Impeded</title>
+      <link>https://blog.jacopo.io/en/post/spid-google-authenticator/</link>
+      <pubDate>Tue, 09 Mar 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/en/post/spid-google-authenticator/</guid>
+      <description>&lt;p&gt;SPID is the Italian Public Digital Identity System, which enables citizens to access online services of the public administration. Citizens can choose among several identity providers. Most of them support two-factor authentication with proprietary authenticator apps, which are not interchangeable nor compatible with &amp;ldquo;universal&amp;rdquo; apps such as Google Authenticator. It turns out that all apps actually use the same algorithm, and the incompatibility is purely artificial.&lt;/p&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>

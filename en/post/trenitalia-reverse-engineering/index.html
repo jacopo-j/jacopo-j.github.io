@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.133.1"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Reverse engineering Trenitalia&#39;s mobile application&nbsp;&ndash;&nbsp;Jacopo Jannone - blog</title><link rel="stylesheet" href="/css/core.min.2dd128fcc709346b49dd1f9b3173e501b3edb153fd8b536ebcaf9a42999da947c3d7beaed80059b93cbb1431ede30089.css" integrity="sha384-LdEo/McJNGtJ3R&#43;bMXPlAbPtsVP9i1NuvK&#43;aQpmdqUfD176u2ABZuTy7FDHt4wCJ"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Reverse engineering Trenitalia&#39;s mobile application" />
+<meta name="og:title" content="Reverse engineering Trenitalia&#39;s mobile application" />
+<meta name="og:description" content="" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/en/"><span class="site name">Jacopo Jannone - blog</span></a>
+            </span>
+        <span class="header right-side"><span class="header lang-switcher"><span>en</span><a href="https://blog.jacopo.io/it/post/trenitalia-reverse-engineering/">it</a></span></span></div></section><section id="content"><div class="article-container"><section class="article header"><h1 class="article title">Reverse engineering Trenitalia's mobile application</h1><p class="article date">September 24, 2018<span class="lang lang-warn">Only available in Italian 🇮🇹</span></p></section><article class="article markdown-body"><p>Trenitalia ha da poco rilasciato la nuova versione della sua app per iOS e Android. Avendo già avuto a che fare con i meravigliosi sistemi informatici delle Ferrovie dello Stato per lo sviluppo di <a href="https://trenitbot.jacopo.io" target="_blank"><strong>TrenItBot</strong></a> e per altri progetti, una sbirciata anche qui non poteva mancare.</p>
+<p>Incominciamo in modo molto semplice: installiamo l&rsquo;app su un dispositivo Android, impostiamo un proxy, e vediamo come l&rsquo;app comunica al suo backend.</p>
+<h2 id="prime-piccole-difficoltà">Prime piccole difficoltà</h2>
+<p><img  src="/2018-09-24-trenitalia-app-reversed/image1.png"
+        alt="Charles Proxy su macOS"/></p>
+<p>Ora sappiamo che l&rsquo;indirizzo a cui l&rsquo;app si collega è <code>https://gw71.mplat.trenitalia.it:444</code> ma&hellip; non tutto fila sempre liscio come dovrebbe. Un errore di SSL quando il certificato del proxy è correttamente installato sul client può significare una sola cosa: <strong>l&rsquo;app usa certificate pinning</strong><sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>. È una mossa astuta, che forse non ci si aspetterebbe dalla stessa azienda che salva le password dei suoi clienti in chiaro<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> e che non usa HTTPS sulla pagina principale del suo sito<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup>. Comunque, non sarà di certo questo dettaglio a fermarci. Le possibili vie per procedere sono due: decompilare l&rsquo;app, tentare di capire in che modo effettua il ceritifcate pinning, <em>patcharla</em> e reinstallarla; oppure <em>patcharla</em> direttamente a runtime con l&rsquo;aiuto di qualche <strong>modulo Xposed</strong><sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup>.</p>
+<p>Naturalmente scegliamo la via più comoda (che non sempre funziona, ma tanto vale provare): avendo un dispositivo su cui è già installato Xposed Framework ci basta scaricare <strong>JustTrustMe</strong><sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup> che si occuperà in maniera completamente automatica e trasparente di impedire a tutte le app installate di usare certificate pinning.</p>
+<p><img  src="/2018-09-24-trenitalia-app-reversed/image2.png"
+        alt="Charles Proxy su macOS"/>
+Bingo! Ora possiamo monitorare liberamente tutto il traffico tra l&rsquo;app e il suo backend. Ripuliamo la sessione del proxy, chiudiamo l&rsquo;app, e incominciamo a registrare tutte le richieste dal momento in cui viene riaperta.</p>
+<p><em><strong>Nota:</strong></em> <em>sembra che l&rsquo;app per iOS, contrariamente a quella per Android, non utilizzi certificate pinning. Me ne sono accorto troppo tardi, ma fortunatamente questo non è stato un grosso problema.</em></p>
+<h2 id="lautenticazione">L&rsquo;autenticazione</h2>
+<p>Non sorprende il fatto che l&rsquo;app debba autenticarsi con il server prima di poter essere utilizzata. Vediamo nel dettaglio le prime due richieste che vengono effettuate e le relative risposte.</p>
+<h3 id="richiesta-1">Richiesta #1</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="nf">POST</span> <span class="nn">/Trenitalia50/apps/services/api/Trenitalia/android/init</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+</span></span><span class="line"><span class="cl"><span class="n">X-Requested-With</span><span class="o">:</span> <span class="l">XMLHttpRequest</span>
+</span></span><span class="line"><span class="cl"><span class="n">Accept</span><span class="o">:</span> <span class="l">text/javascript, text/html, application/xml, text/xml, */*</span>
+</span></span><span class="line"><span class="cl"><span class="n">Accept-Language</span><span class="o">:</span> <span class="l">it-IT</span>
+</span></span><span class="line"><span class="cl"><span class="n">Content-type</span><span class="o">:</span> <span class="l">application/x-www-form-urlencoded; charset=UTF-8</span>
+</span></span><span class="line"><span class="cl"><span class="n">x-wl-app-version</span><span class="o">:</span> <span class="l">5.0.1.0004</span>
+</span></span><span class="line"><span class="cl"><span class="n">x-wl-app-details</span><span class="o">:</span> <span class="l">{&#34;applicationDetails&#34;:{&#34;platformVersion&#34;:&#34;7.1.0.0&#34;,&#34;nativeVersion&#34;:&#34;2552299265&#34;,&#34;skinName&#34;:&#34;default&#34;,&#34;skinChecksum&#34;:2573855884}}</span>
+</span></span><span class="line"><span class="cl"><span class="n">x-wl-clientlog-unified</span><span class="o">:</span> <span class="l">{&#34;x-wl-clientlog-deviceId&#34;:&#34;dsj32oijfds12jlk&#34;,&#34;x-wl-clientlog-appname&#34;:&#34;Trenitalia&#34;,&#34;x-wl-clientlog-appversion&#34;:&#34;5.0.1.0004&#34;,&#34;x-wl-clientlog-osversion&#34;:&#34;6.0.1&#34;,&#34;x-wl-clientlog-env&#34;:&#34;android&#34;,&#34;x-wl-clientlog-model&#34;:&#34;Nexus 5&#34;}</span>
+</span></span><span class="line"><span class="cl"><span class="n">X-WL-ClientId</span><span class="o">:</span> <span class="l">390bbaa67d514345b84abfed3f8ae95943js0sak</span>
+</span></span><span class="line"><span class="cl"><span class="n">X-WL-S-ClientId</span><span class="o">:</span> <span class="l">[dati rimossi]</span>
+</span></span><span class="line"><span class="cl"><span class="n">X-WL-Session</span><span class="o">:</span> <span class="l">94c944f2-adb7-481e-bf57-adfbc02bb405</span>
+</span></span><span class="line"><span class="cl"><span class="n">x-wl-device-id</span><span class="o">:</span> <span class="l">4e2dd2eb-f13e-4387-8221-bbea8fb40b7c</span>
+</span></span><span class="line"><span class="cl"><span class="n">Content-Length</span><span class="o">:</span> <span class="l">40</span>
+</span></span><span class="line"><span class="cl"><span class="n">Host</span><span class="o">:</span> <span class="l">gw71.mplat.trenitalia.it:444</span>
+</span></span><span class="line"><span class="cl"><span class="n">Connection</span><span class="o">:</span> <span class="l">Keep-Alive</span>
+</span></span><span class="line"><span class="cl"><span class="n">User-Agent</span><span class="o">:</span> <span class="l">Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)/Worklight/7.1.0.0</span>
+</span></span><span class="line"><span class="cl"><span class="n">Cookie</span><span class="o">:</span> <span class="l">JSESSIONID=[dati rimossi]</span>
+</span></span><span class="line"><span class="cl"><span class="n">Cookie2</span><span class="o">:</span> <span class="l">$Version=1</span>
+</span></span><span class="line"><span class="cl"><span class="n">x-wl-analytics-tracking-id</span><span class="o">:</span> <span class="l">b444eed4-7326-4f32-b5e5-909b31a3687d</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">isAjaxRequest=true&amp;x=0.84104398258027315
+</span></span></code></pre></div><p>Non male come prima richiesta. Notiamo subito una grande quantità di header, di cui molti sono usati per la profilazione dell&rsquo;utente. Notiamo anche una cosa un po&rsquo; insolita (e brutta): alcuni header come <code>x-wl-app-details</code> contengono dei payload in formato JSON. Interessante il contenuto dell&rsquo;header <code>X-WL-S-ClientId</code>, che purtroppo ho dovuto rimuovere per motivi di sicurezza. Si tratta di tre stringhe codificate in base64 e concatenate; anche loro contengono dati JSON e sembrano riferirsi a qualche forma di crittografia RSA. Un&rsquo;altra cosa che mi ha incuriosito è il parametro <code>x</code> del corpo della richiesta, che sembra essere un numero reale a caso compreso tra 0 e 1, diverso ogni volta. Approfondire ulteriormente questi aspetti mi interessa poco; se qualcuno ha intenzione di mettersi in gioco e scopre qualcosa di nuovo a riguardo è sempre benvenuto.</p>
+<hr>
+<p><strong>Aggiornamento:</strong> alcuni utenti di Reddit suggeriscono una spiegazione per queste due incognite.</p>
+<p><a href="https://www.reddit.com/r/italy/comments/9ig2ew/reverse_engineering_dellapp_di_trenitalia/e6jfu6z" target="_blank">/u/unicoletti</a> dice:</p>
+<blockquote>
+<p>il parametro <code>x</code> serve probabilmente ad impedire il caching della richiesta HTTP</p>
+</blockquote>
+<p><a href="https://www.reddit.com/r/italy/comments/9ig2ew/reverse_engineering_dellapp_di_trenitalia/e6jgtm3" target="_blank">/u/rocco88</a>, riguardo al contenuto dell&rsquo;header <code>X-WL-S-ClientId</code>:</p>
+<blockquote>
+<p>Dovrebbe essere JWT: jwt.io</p>
+</blockquote>
+<hr>
+<p>Vediamo ora la risposta del server:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">401</span> <span class="ne">Unauthorized</span>
+</span></span><span class="line"><span class="cl"><span class="n">Date</span><span class="o">:</span> <span class="l">Sat, 25 Aug 2018 21:42:32 GMT</span>
+</span></span><span class="line"><span class="cl"><span class="n">X-Frame-Options</span><span class="o">:</span> <span class="l">SAMEORIGIN</span>
+</span></span><span class="line"><span class="cl"><span class="n">Strict-Transport-Security</span><span class="o">:</span> <span class="l">max-age=63072000; includeSubdomains; preload</span>
+</span></span><span class="line"><span class="cl"><span class="n">X-Powered-By</span><span class="o">:</span> <span class="l">Servlet/3.0</span>
+</span></span><span class="line"><span class="cl"><span class="n">P3P</span><span class="o">:</span> <span class="l">policyref=&#34;/w3c/p3p.xml&#34;, CP=&#34;CAO DSP COR CURa ADMa DEVa OUR IND PHY ONL UNI COM NAV INT DEM PRE&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">WWW-Authenticate</span><span class="o">:</span> <span class="l">WL-Composite-Challenge</span>
+</span></span><span class="line"><span class="cl"><span class="n">Expires</span><span class="o">:</span> <span class="l">Thu, 01 Jan 1970 00:00:00 GMT</span>
+</span></span><span class="line"><span class="cl"><span class="n">Cache-Control</span><span class="o">:</span> <span class="l">no-cache, no-store, must-revalidate</span>
+</span></span><span class="line"><span class="cl"><span class="n">Pragma</span><span class="o">:</span> <span class="l">no-cache</span>
+</span></span><span class="line"><span class="cl"><span class="n">Content-Length</span><span class="o">:</span> <span class="l">166</span>
+</span></span><span class="line"><span class="cl"><span class="n">Set-Cookie</span><span class="o">:</span> <span class="l">WL_PERSISTENT_COOKIE=4a8c58c8-0230-4fa3-98dc-fd870f89f147; Expires=Sun, 25-Aug-19 21:42:32 GMT; Path=/Trenitalia50</span>
+</span></span><span class="line"><span class="cl"><span class="n">X-XSS-Protection</span><span class="o">:</span> <span class="l">1; mode=block</span>
+</span></span><span class="line"><span class="cl"><span class="n">X-Content-Type-Options</span><span class="o">:</span> <span class="l">nosniff</span>
+</span></span><span class="line"><span class="cl"><span class="n">Keep-Alive</span><span class="o">:</span> <span class="l">timeout=10, max=99</span>
+</span></span><span class="line"><span class="cl"><span class="n">Content-Type</span><span class="o">:</span> <span class="l">application/json; charset=UTF-8</span>
+</span></span><span class="line"><span class="cl"><span class="n">Content-Language</span><span class="o">:</span> <span class="l">en-US</span>
+</span></span><span class="line"><span class="cl"><span class="n">Connection</span><span class="o">:</span> <span class="l">keep-alive</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">/*-secure-</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="nt">&#34;challenges&#34;</span><span class="p">:{</span><span class="nt">&#34;wl_antiXSRFRealm&#34;</span><span class="p">:{</span><span class="nt">&#34;WL-Instance-Id&#34;</span><span class="p">:</span><span class="s2">&#34;8e22b68ac66c4624a9b4j8gf3f&#34;</span><span class="p">},</span><span class="nt">&#34;wl_deviceNoProvisioningRealm&#34;</span><span class="p">:{</span><span class="nt">&#34;token&#34;</span><span class="p">:</span><span class="s2">&#34;3dac410d695e4cd18f4782829y&#34;</span><span class="p">}}}</span><span class="err">*/</span>
+</span></span></code></pre></div><p>Ci sono solo un paio di cose da notare:</p>
+<ul>
+<li>il server restituisce un codice <code>401 Unauthorized</code>. È perfettamente comprensibile visto che l&rsquo;app non si è ancora autenticata;</li>
+<li>il server comunica all&rsquo;app la modalità di autenticazione tramite l&rsquo;header <code>WWW-Authenticate</code>;</li>
+<li>il corpo della risposta è un payload JSON <strong>racchiuso in un tag</strong> del tipo <code>/*-secure-[payload]*/</code>. Sarà una seccatura dover ripulire ogni volta le risposte da questi inutili tag.</li>
+</ul>
+<p>Da questo momento il client ha tutte le informazioni necessarie per potersi autenticare sul server; infatti l&rsquo;app invia immediatamente una seconda richiesta.</p>
+<h3 id="richiesta-2">Richiesta #2</h3>
+<p>Questa seconda richiesta è simile alla prima eccetto per due header aggiuntivi:</p>
+<pre tabindex="0"><code>WL-Instance-Id: 8e22b68ac66c4624a9b4j8gf3f
+Authorization: {&#34;wl_deviceNoProvisioningRealm&#34;:{&#34;ID&#34;:{&#34;token&#34;:&#34;3dac410d695e4cd18f4782829y&#34;,&#34;app&#34;:{&#34;id&#34;:&#34;Trenitalia&#34;,&#34;version&#34;:&#34;5.0.1.0004&#34;},&#34;device&#34;:{&#34;id&#34;:&#34;4e2dd2eb-f13e-4387-8221-bbea8fb40b7c&#34;,&#34;os&#34;:&#34;6.0.1&#34;,&#34;model&#34;:&#34;Nexus 5&#34;,&#34;environment&#34;:&#34;android&#34;},&#34;custom&#34;:{}}}}
+</code></pre><p>Naturalmente si tratta degli header rispettivamente di sessione e di autenticazione. I valori di entrambi ci sono stati comunicati dal server nel corpo prima richiesta.</p>
+<p>Anche la risposta del server è analoga alla precedente, ma questa volta riceviamo un codice <code>200 OK</code> a conferma del fatto che ci siamo autenticati con successo.</p>
+<h3 id="richieste-successive">Richieste successive</h3>
+<p>Ora ci chiediamo: quali header sono essenziali per rimanere autenticati e quali invece non servono? E anche: quali header sono <em>obbligatori</em> (pena codice <code>500 Internal Server Error</code>) e quali sono inutili? Utilizziamo gli strumenti del proxy per inviare la richiesta precedente più volte, ogni volta rimuovendo un header, fino a quando otteniamo un errore. Con questo procedimento riusciamo a trovare la richiesta con il <strong>minimo numero di header</strong> che vada comunque a buon fine:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="nf">POST</span> <span class="nn">/Trenitalia50/apps/services/api/Trenitalia/android/init</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+</span></span><span class="line"><span class="cl"><span class="n">x-wl-app-version</span><span class="o">:</span> <span class="l">5.0.1.0004</span>
+</span></span><span class="line"><span class="cl"><span class="n">WL-Instance-Id</span><span class="o">:</span> <span class="l">hr6dors9prb2krenhap5ni2qvk</span>
+</span></span><span class="line"><span class="cl"><span class="n">Host</span><span class="o">:</span> <span class="l">gw71.mplat.trenitalia.it:444</span>
+</span></span><span class="line"><span class="cl"><span class="n">Content-Length</span><span class="o">:</span> <span class="l">634</span>
+</span></span><span class="line"><span class="cl"><span class="n">Content-Type</span><span class="o">:</span> <span class="l">application/x-www-form-urlencoded</span>
+</span></span></code></pre></div><p>Molto meno incasinato di prima! Sostanzialmente oltre agli header standard e ai cookie (che devono essere sempre preservati) ce ne sono solo due da aggiungere obbligatoriamente: <code>x-wl-app-version</code> (la versione dell&rsquo;app), e <code>WL-Instance-Id</code>, l&rsquo;ID di sessione di cui abbiamo parlato prima. Anche i due parametri della richiesta <code>isAjaxRequest</code> e <code>x</code> possono essere omessi senza conseguenze.</p>
+<h3 id="conclusioni">Conclusioni</h3>
+<p>Riassumendo, il flusso di autenticazione che dovremo seguire è il seguente:</p>
+<ul>
+<li>impostiamo solamente l&rsquo;header <code>x-wl-app-version</code> e facciamo una richiesta POST;</li>
+<li>otteniamo una risposta con codice <code>401</code>, il corpo contiene il valore dell&rsquo;header <code>WL-Instance-Id</code> e il token di autenticazione;</li>
+<li>aggiungiamo l&rsquo;header <code>WL-Instance-Id</code> e l&rsquo;header <code>Authorization</code>, la cui struttura è indicata nella <a href="#richiesta-2" >richiesta #2</a>;</li>
+<li>il server conferma l&rsquo;avvenuta autenticazione con un codice <code>200</code>;</li>
+<li>da questo momento tutte le richieste dovranno avere tra gli header solamente <code>x-wl-app-version</code> e <code>WL-Instance-Id</code><sup id="fnref:6"><a href="#fn:6" class="footnote-ref" role="doc-noteref">6</a></sup>.</li>
+</ul>
+<p>Apriamo una parentesi per notare come questo meccanismo di autenticazione renda immediatamente riconoscibile la piattaforma su cui è stata sviluppata l&rsquo;app: si tratta di IBM Worklight (ecco cosa significa quel <code>WL</code> costantemente presente negli header!). La cosa non sorprende visto che Trenitalia si è basata a lungo su IBM per i propri server e solo negli ultimi anni ha incominciato a migrare alcuni servizi verso Microsoft. Si spiega anche il look <em>da webapp</em> dell&rsquo;applicazione, che in effetti è scritta in HTML5 e JavaScript. Purtroppo Worklight non è piattaforma ben nota e documentata su internet, e questo rende tutto più complicato visto che dovremo cavarcela da soli.</p>
+<p>Comunque, ora che sappiamo come funziona l&rsquo;autenticazione client-server possiamo analizzare ogni richiesta effettuata dall&rsquo;app e saremo anche in grado di riprodurla. Prima di addentrarci nelle varie funzionalità dell&rsquo;applicazione, però, può essere utile e interessante fare una piccola digressione su com&rsquo;è fatta la banca dati degli orari di Trenitalia a cui questa attinge (come vedremo, tramite opportuni <em>adattatori</em>).</p>
+<h2 id="la-banca-dati-di-trenitalia">La banca dati di Trenitalia</h2>
+<p>La procedura di creazione di un orario ferroviario è estremamente complessa e oltre Trenitalia coinvolge <strong>RFI</strong>, azienda del gruppo FS che si occupa della gestione dell&rsquo;infrastruttura. Quest&rsquo;ultima raccoglie le richieste delle diverse Imprese Ferroviarie, progetta le <em>tracce</em> con gli orari, il percorso e la composizione di ogni singolo treno, quindi archivia il tutto in un <strong>database relazionale</strong> di Microsoft Access denominato <em>Treno Nazionale</em>. Questo database, integrato con ulteriori informazioni (come i numeri dei binari) provenienti dalle direzioni compartimentali di tutto il territorio, alimenta la produzione dei quadri orario in stazione, il motore di ricerca del sito di Trenitalia, ViaggiaTreno<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup>, eccetera.</p>
+<p>Esistono quindi molti servizi che si interfacciano a questa grossa banca dati, e per di più ogni servizio usa il suo protocollo e necessita di informazioni in un determinato formato. <strong>ViaggiaTreno</strong> per esempio utilizza un API di tipo <em>REST</em> per cui è stato costruito un opportuno adattatore, mentre altri potenziali client che usano un altro protocollo necessitano di un adattatore diverso. Gli adattatori non fanno altro che mettere in comunicazione due software che parlano lingue diverse.</p>
+<p><img  src="/2018-09-24-trenitalia-app-reversed/image3.png"
+        alt="Schema generico adattatori database Trenitalia"/></p>
+<p>Bisogna anche sottolineare che gli adattatori (almeno in teoria) selezionano dalla banca dati solo i dati che effettivamente servono all&rsquo;applicazione per cui sono stati costruiti. Nella realtà dei fatti questo non è sempre vero: basta vedere l&rsquo;enorme mole di dati che viene restituita dall&rsquo;API di ViaggiaTreno<sup id="fnref:8"><a href="#fn:8" class="footnote-ref" role="doc-noteref">8</a></sup> per accorgersi che molti di questi rimangono inutilizzati dal frontend. Per esempio i codici interni dei binari sono completamente inutili e non vengono neanche menzionati nel codice sorgente del sito; tuttavia sono presenti tra le informazioni che vengono recuperate e messe a disposizione dall&rsquo;adattatore.</p>
+<p>Altri dati vengono invece <strong>filtrati</strong> o modificati nel passaggio dalla banca dati al client; è questo il caso delle <em>località</em>, che in ViaggiaTreno sono limitate alle stazioni che effettuano servizio viaggiatori (non compaiono le stazioni per i treni merci, i posti di movimento, i bivi e le località di passaggio). Il nome delle stazioni viene reso leggermente più comprensibile rispetto a come è salvato in <em>Treno Nazionale</em>, dove è limitato a 16 caratteri e presenta abbreviazioni e ambiguità spesso indecifrabili. Infine il codice della stazione viene prefissato dal carattere <code>S</code> oppure <code>N</code> a seconda che si tratti di una stazione gestita da RFI o da FerrovieNord.</p>
+<h2 id="lapi-e-le-richieste">L&rsquo;API e le richieste</h2>
+<p>Ho analizzato approfonditamente tutte le richieste che costituiscono il <em>cuore</em> dell&rsquo;applicazione: orari, tariffe, offerte, stato dei treni in tempo reale, ecc.
+Ho prodotto una documentazione <em>empirica</em> basata su ciò che ho scoperto, e ho scritto un <strong>wrapper in Python</strong> che permette a chiunque di utilizzare parte dell&rsquo;API dell&rsquo;app in modo semplice. Trovate tutto sul mio <a href="https://github.com/jacopo-j/TrenitaliaAPI" target="_blank"><strong>repository di GitHub</strong></a> e sulla relativa <a href="https://github.com/jacopo-j/TrenitaliaAPI/wiki/API-dell%27app-Trenitalia" target="_blank">Wiki</a>. Qui di seguito vorrei invece soffermarmi su alcuni aspetti più discorsivi e piacevoli anche per chi non è interessato a una mera documentazione tecnica.</p>
+<p>Innanzitutto notiamo che tutte le richieste <em>non-meta</em>, cioè che non riguardano l&rsquo;applicazione stessa o il suo funzionamento, usano un unico endpoint:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="nf">POST</span> <span class="nn">/Trenitalia50/apps/services/api/Trenitalia/android/query</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+</span></span></code></pre></div><p>Qui emerge molto nitidamente il ruolo <em>esterno</em> del server a cui sono inviate le richieste, che <strong>non entra mai nel merito</strong> dei dati sui treni e che quindi non si interfaccia in nessun modo alla banca dati di Trenitalia. Invece, l&rsquo;app invia al server tre informazioni fondamentali tramite il corpo della POST: l&rsquo;<strong>adattatore</strong> che ha bisogno di contattare; l&rsquo;informazione che necessita dalla banca dati; i dati in formato JSON che verranno utilizzati per interrogare la banca dati. A questo punto il server contatta l&rsquo;adattatore in questione e gli passa i dati come fossero una <em>scatola nera</em>, ignorando completamente cosa siano o cosa contengano. Sarà l&rsquo;adattatore ad <em>aprire la scatola</em> e a <em>guardarci dentro</em>.</p>
+<p>Il server che si appoggia effettivamente alla banca dati esegue Microsoft IIS e comunica tramite il protocollo SOAP<sup id="fnref:9"><a href="#fn:9" class="footnote-ref" role="doc-noteref">9</a></sup>. Anche questo è reso evidente dalle risposte del server alle varie richieste. Allora all&rsquo;adattatore tocca il compito di leggere i parametri che ha ricevuto, rielaborarli in modo da ottenere un <em>envelope</em> secondo il protocollo SOAP, e inoltrare il risultato all&rsquo;ultimo server della catena. Questo provvederà ad ottenere le informazioni dalla banca dati, a restituirle all&rsquo;adattatore, che quindi le riconvertirà in JSON e le restituirà al backend dell&rsquo;app.</p>
+<p><img  src="/2018-09-24-trenitalia-app-reversed/image4.png"
+        alt="Schema richieste app Trenitalia"/></p>
+<p>Per qualcuno si tratterà sicuramente di un&rsquo;implementazione <em>brutta</em>, specialmente se vista dall&rsquo;applicazione e senza avere una prospettiva generale. Tuttavia sembra una scelta piuttosto logica e sensata se si vuole avere un sistema che sia il più possibile modulare. Ciò non toglie che tutte le risposte ricevute dall&rsquo;API abbiano un enorme overhead di informazioni inutili, che rendono macchinosa l&rsquo;elaborazione delle risposte (specialmente senza avere una documentazione sottomano).</p>
+<p>A questo si aggiungono alcune incoerenze a cui bisogna prestare una certa attenzione:</p>
+<ul>
+<li>a volte la risposta (in JSON) è racchiusa in tag di tipo <code>/*-secure-[payload]*/</code>, altre volte no;</li>
+<li>in alcuni campi la data inviata o ricevuta contiene un offset rispetto a UTC per determinare il fuso orario; in altri campi invece la data è <em>naive</em>;</li>
+<li>in alcuni casi il valore <code>null</code> viene utilizzato normalmente, in altri casi è sostituito da un dizionario: <code>{&quot;nil&quot;: true}</code>;</li>
+<li>spesso, ma non sempre, gli interi sono passati come stringa.</li>
+</ul>
+<h2 id="approfondimenti-sui-dati">Approfondimenti sui dati</h2>
+<h3 id="le-stazioni">Le stazioni</h3>
+<p>La UIC<sup id="fnref:10"><a href="#fn:10" class="footnote-ref" role="doc-noteref">10</a></sup> specifica i <strong>codici identificativi</strong> di ogni località a livello internazionale; si tratta di codici numerici da 1 a 5 cifre detti ENEE<sup id="fnref:11"><a href="#fn:11" class="footnote-ref" role="doc-noteref">11</a></sup>, e sono gli stessi restituiti dal backend di ViaggiaTreno. Sono invece detti RICS<sup id="fnref:12"><a href="#fn:12" class="footnote-ref" role="doc-noteref">12</a></sup> i codici a 2 cifre che identificano le compagnie ferroviarie. Ogni coppia <code>(codice RICS, codice ENEE)</code> identifica univocamente una località a livello internazionale. Naturalmente <em>località</em> in questo contesto è un termine che generalizza il concetto di <em>stazione</em>, includendo anche bivi, posti di movimento, ecc.</p>
+<p>Trenitalia utilizza perciò come ID delle stazioni una combinazione di questi due identificativi; in particolare per la sua app sembra che il codice di ogni stazione sia costituito dal codice RICS concatenato al codice ENEE esteso con eventuali zeri fino a 7 cifre. Per esempio, il codice RICS delle FS è <code>83</code>; il codice ENEE della stazione di Milano Centrale è <code>1700</code>; il corrispondente ID restituito dall&rsquo;API dell&rsquo;app di Trenitalia è <code>830001700</code>.</p>
+<p>In realtà esistono delle eccezioni: si tratta di alcune località toscane di cui nessuna sembra corrispondere a una stazione ferroviaria, e che quindi non hanno un codice ENEE. Non sono riuscito a capire quale sia il ruolo di queste località, che sono riconoscibili perché il loro ID è compreso tra <code>835118101</code> e <code>835118359</code>. Forse si tratta di fermate per autobus, ma il motivo per cui siano presenti qui non mi è chiaro.</p>
+<h3 id="le-informazioni-in-tempo-reale">Le informazioni in tempo reale</h3>
+<p>L&rsquo;app di Trenitalia permette di cercare un treno e di visualizzare informazioni in tempo reale come fermate, ritardi, binari, ecc. Naturalmente queste informazioni provengono dalla stessa fonte di dati di ViaggiaTreno, tuttavia ci sono delle differenze importanti nei dati che vengono restituiti. Innanzitutto dovrebbe ormai essere chiaro e non dovrebbe stupire il fatto che i nomi delle stazioni siano scritti in maniera diversa. Gli ID delle stazioni sono i soliti codici ENEE sprovvisti del prefisso <code>S</code> o <code>N</code> aggiunto da ViaggiaTreno e senza zeri di padding. Per ogni stazione vengono anche restituite le relative <strong>coordinate geografiche</strong>, se presenti nel database.</p>
+<p>Molte informazioni presenti in ViaggiaTreno qui sono assenti:</p>
+<ul>
+<li>il percorso dei treni soppressi;</li>
+<li>eventuali fermate soppresse o straordinarie;</li>
+<li>l&rsquo;orientamento del treno;</li>
+<li>l&rsquo;operatore del treno (Trenitalia, Trenord, ecc.);</li>
+<li>la tipologia di treno (anche se compaiono solo treni viaggiatori);</li>
+<li>i cambi di numerazione;</li>
+<li>eventuale origine o destinazione estera con relativi orari.</li>
+</ul>
+<p>Ma qui c&rsquo;è un&rsquo;informazione in più rispetto a ViaggiaTreno, che peraltro sorprende molto vedere: nell&rsquo;elenco di fermate di ogni treno sono incluse anche <strong>tutte le località intermedie per cui il treno transita</strong> senza fermarsi. Questi dati sono presenti e utilizzati anche da ViaggiaTreno per il calcolo del ritardo e per mostrare l&rsquo;ora e il luogo di ultimo rilevamento, tuttavia non sono restituiti dall&rsquo;API. In questo caso invece è disponibile l&rsquo;intero percorso del treno, comprensivo degli orari di transito previsti, e i dati mostrati all&rsquo;utente sono filtrati direttamente dall&rsquo;interfaccia dell&rsquo;applicazione.</p>
+<h2 id="lapi-a-disposizione-di-tutti">L&rsquo;API a disposizione di tutti</h2>
+<p>Ho già menzionato il <a href="https://github.com/jacopo-j/TrenitaliaAPI" target="_blank">repository di GitHub</a> che ho creato contestualmente a questo post. Il wrapper in Python dell&rsquo;API è a disposizione di chiunque voglia studiarne il codice o per chi voglia semplicemente avere a disposizione un&rsquo;interfaccia comoda per i propri progetti.</p>
+<p>Chi invece non si accontenta degli endpoint supportati dal mio codice (che non è assolutamente completo) può visitare la <a href="https://github.com/jacopo-j/TrenitaliaAPI/wiki/API-dell%27app-Trenitalia" target="_blank">Wiki</a> e studiare direttamente il funzionamento dell&rsquo;API, magari <em>sporcandosi le mani</em> con un proxy per vedere con i propri occhi ciò che io ho documentato. Sarebbe poi molto interessante se qualcuno decidesse di crearsi un proprio wrapper alternativo o – ancora meglio – di completare il mio con gli endpoint e tutto ciò che manca. A tal proposito sono sempre benvenute le <em>pull request</em> che possano integrare o estendere il mio lavoro.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p><a href="https://security.stackexchange.com/questions/29988/what-is-certificate-pinning" target="_blank">https://security.stackexchange.com/questions/29988/what-is-certificate-pinning</a>&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="http://plaintextoffenders.com/post/30583672228/trenitaliacom-italian-railway-password-change" target="_blank">http://plaintextoffenders.com/post/30583672228/trenitaliacom-italian-railway-password-change</a>&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p><a href="http://www.trenitalia.com/" target="_blank">http://www.trenitalia.com/</a>&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p><a href="http://repo.xposed.info/module/de.robv.android.xposed.installer" target="_blank">http://repo.xposed.info/module/de.robv.android.xposed.installer</a>&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:5">
+<p><a href="https://github.com/Fuzion24/JustTrustMe" target="_blank">https://github.com/Fuzion24/JustTrustMe</a>&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:6">
+<p>L&rsquo;header <code>Authorization</code> viene utilizzato solo una volta per eseguire l&rsquo;autenticazione; non deve essere inserito per le richieste successive.&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:7">
+<p><a href="https://github.com/bluviolin/TrainMonitor/wiki/API-del-sistema-Viaggiatreno" target="_blank">https://github.com/bluviolin/TrainMonitor/wiki/API-del-sistema-Viaggiatreno</a>&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:8">
+<p><a href="http://www.viaggiatreno.com" target="_blank">http://www.viaggiatreno.com</a>&#160;<a href="#fnref:8" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:9">
+<p><a href="https://it.wikipedia.org/wiki/SOAP" target="_blank">https://it.wikipedia.org/wiki/SOAP</a>&#160;<a href="#fnref:9" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:10">
+<p><a href="https://uic.org/" target="_blank">https://uic.org/</a>&#160;<a href="#fnref:10" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:11">
+<p><a href="https://uic.org/location-codes-enee" target="_blank">https://uic.org/location-codes-enee</a>&#160;<a href="#fnref:11" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:12">
+<p><a href="https://uic.org/rics" target="_blank">https://uic.org/rics</a>&#160;<a href="#fnref:12" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div></article><section class="article labels"><a class="tag" href=/en/tags/trenitalia/>trenitalia</a><a class="tag" href=/en/tags/fs/>fs</a><a class="tag" href=/en/tags/app/>app</a><a class="tag" href=/en/tags/reverse-engineering/>reverse engineering</a></section>
+
+
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<div>
+<span style="color: silver">Share this post: </span><div id="share-buttons">
+<div class="twitter" title="Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https%3A%2F%2Fblog.jacopo.io%2Fen%2Fpost%2Ftrenitalia-reverse-engineering%2F%20%E2%80%93%20by%20%40jacopoj_');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fblog.jacopo.io%2Fen%2Fpost%2Ftrenitalia-reverse-engineering%2F');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="E-mail" onclick="window.open('mailto:?body=https%3A%2F%2Fblog.jacopo.io%2Fen%2Fpost%2Ftrenitalia-reverse-engineering%2F');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+</div>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/en/post/atm-app-vulnerability/"><span class="iconfont icon-article"></span>Vulnerabilities in ATM Milano's mobile app</a></p></section></div></section><section id="footer">
+    <div class="footer-wrap"><div class="details social-links"><a class="item" href="https://github.com/jacopo-j" target="_blank"><span class="iconfont icon-github"></span>&nbsp;jacopo-j</a><a rel="me" class="item" href="https://infosec.exchange/@jacopo" target="_blank"><span class="iconfont icon-mastodon"></span>&nbsp;@jacopo@infosec.exchange</a><a class="item" href="https://twitter.com/jacopoj_" target="_blank"><span class="iconfont icon-twitter"></span>&nbsp;@jacopoj_</a><a class="item" href="https://www.linkedin.com/in/jacopoj" target="_blank"><span class="iconfont icon-linkedin"></span>&nbsp;jacopoj</a><a class="item" href="https://jacopo.io/contact/?type=blog&amp;locale=en" target="_blank"><span class="iconfont icon-email"></span>&nbsp;E-mail</a><a class="item" href="/en/post/index.xml" target="_blank"><span class="iconfont icon-rss"></span>&nbsp;RSS</a></div><p class="copyright">© 2018-2024 <a href='https://jacopo.io' target='_blank'>Jacopo Jannone</a></p></div>
+</section></body>
+
+</html>

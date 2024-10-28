@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>App on Jacopo Jannone - blog</title>
+    <link>https://blog.jacopo.io/en/tags/app/</link>
+    <description>Recent content in App on Jacopo Jannone - blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <copyright>© 2018-2024 Jacopo Jannone</copyright>
+    <lastBuildDate>Tue, 09 Mar 2021 00:00:00 +0000</lastBuildDate>
+    
+        <atom:link href="https://blog.jacopo.io/en/tags/app/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>SPID and Google Authenticator: When Interoperability Is Intentionally Impeded</title>
+      <link>https://blog.jacopo.io/en/post/spid-google-authenticator/</link>
+      <pubDate>Tue, 09 Mar 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/en/post/spid-google-authenticator/</guid>
+      <description>&lt;p&gt;SPID is the Italian Public Digital Identity System, which enables citizens to access online services of the public administration. Citizens can choose among several identity providers. Most of them support two-factor authentication with proprietary authenticator apps, which are not interchangeable nor compatible with &amp;ldquo;universal&amp;rdquo; apps such as Google Authenticator. It turns out that all apps actually use the same algorithm, and the incompatibility is purely artificial.&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>Vulnerabilities in ATM Milano&#39;s mobile app</title>
+      <link>https://blog.jacopo.io/en/post/atm-app-vulnerability/</link>
+      <pubDate>Tue, 18 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/en/post/atm-app-vulnerability/</guid>
+      <description>&lt;p&gt;Some design flaws left ATM Milano&amp;rsquo;s mobile app vulnerable to attacks: anyone could access any users&amp;rsquo; data and tickets by just knowing their e-mail address. Meanwhile, some apparent security features made the vulnerabilities harder to spot and to exploit.&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>Reverse engineering Trenitalia&#39;s mobile application</title>
+      <link>https://blog.jacopo.io/en/post/trenitalia-reverse-engineering/</link>
+      <pubDate>Mon, 24 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.jacopo.io/en/post/trenitalia-reverse-engineering/</guid>
+      <description>&lt;p&gt;Trenitalia ha da poco rilasciato la nuova versione della sua app per iOS e Android. Avendo già avuto a che fare con i meravigliosi sistemi informatici delle Ferrovie dello Stato per lo sviluppo di &lt;a href=&#34;https://trenitbot.jacopo.io&#34; target=&#34;_blank&#34;&gt;&lt;strong&gt;TrenItBot&lt;/strong&gt;&lt;/a&gt; e per altri progetti, una sbirciata anche qui non poteva mancare.&lt;/p&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>
